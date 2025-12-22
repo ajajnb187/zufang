@@ -280,16 +280,23 @@ export default {
 
 <style scoped>
 .tenants-page {
-	min-height: 100vh;
-	background: #f5f7fa;
+	height: 100vh;
+	background: #F7F9FC;
 	padding-bottom: 120rpx;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
 }
 
 .stats-card {
 	display: flex;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	padding: 40rpx 20rpx;
-	color: #fff;
+	margin: 24rpx;
+	padding: 28rpx 24rpx;
+	background: #FFFFFF;
+	border-radius: 20rpx;
+	border: 1rpx solid #EEF2F7;
+	box-shadow: 0 6rpx 18rpx rgba(17, 24, 39, 0.06);
+	color: #1F2937;
 }
 
 .stat-item {
@@ -297,21 +304,34 @@ export default {
 	text-align: center;
 }
 
+.stat-item + .stat-item {
+	border-left: 1rpx solid #EEF2F7;
+}
+
 .stat-num {
 	display: block;
-	font-size: 48rpx;
-	font-weight: bold;
+	font-size: 44rpx;
+	font-weight: 800;
 	margin-bottom: 8rpx;
+}
+
+.stat-item:nth-child(2) .stat-num {
+	color: #16A34A;
+}
+
+.stat-item:nth-child(3) .stat-num {
+	color: #FA8C16;
 }
 
 .stat-label {
 	font-size: 24rpx;
-	opacity: 0.9;
+	color: #8B95A5;
 }
 
 .tenant-list {
-	height: calc(100vh - 250rpx);
-	padding: 20rpx;
+	flex: 1;
+	min-height: 0;
+	padding: 12rpx 24rpx 24rpx;
 }
 
 .tenant-card {
@@ -475,8 +495,9 @@ export default {
 	right: 0;
 	height: 100rpx;
 	display: flex;
-	background: #fff;
-	box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+	background: #FFFFFF;
+	border-top: 1rpx solid #EEF2F7;
+	box-shadow: none;
 	padding-bottom: env(safe-area-inset-bottom);
 	z-index: 999;
 }
@@ -496,14 +517,16 @@ export default {
 
 .tabbar-text {
 	font-size: 22rpx;
-	color: #999;
+	color: #8B95A5;
+	font-weight: 500;
 }
 
 .tabbar-item.active .tabbar-text {
-	color: #409eff;
+	color: #FF6B35;
+	font-weight: 600;
 }
 
 .landlord-tabbar .tab-item.active .tab-text {
-	color: #409eff;
+	color: #FF6B35;
 }
 </style>

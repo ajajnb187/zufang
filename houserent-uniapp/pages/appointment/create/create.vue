@@ -146,32 +146,47 @@ export default {
 <style scoped>
 .appointment-page {
 	min-height: 100vh;
-	background: #f5f7fa;
-	padding: 20rpx;
+	background: #F7F9FC;
+	padding: 24rpx 30rpx;
 }
 
 .house-info {
-	background: #fff;
-	padding: 30rpx;
-	border-radius: 16rpx;
-	margin-bottom: 20rpx;
+	background: linear-gradient(135deg, #FFF5F0, #FFFFFF);
+	padding: 36rpx;
+	border-radius: 24rpx;
+	margin-bottom: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	position: relative;
+	overflow: hidden;
+}
+
+.house-info::before {
+	content: '📅';
+	position: absolute;
+	top: 20rpx;
+	right: 20rpx;
+	font-size: 60rpx;
+	opacity: 0.1;
 }
 
 .house-title {
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #333;
+	font-size: 36rpx;
+	font-weight: 700;
+	color: #2C3E50;
+	position: relative;
+	z-index: 1;
 }
 
 .form-section {
-	background: #fff;
-	border-radius: 16rpx;
-	padding: 20rpx 30rpx;
+	background: #FFFFFF;
+	border-radius: 24rpx;
+	padding: 24rpx 36rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 }
 
 .form-item {
-	padding: 30rpx 0;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 32rpx 0;
+	border-bottom: 1rpx solid #F7F9FC;
 }
 
 .form-item:last-child {
@@ -180,39 +195,95 @@ export default {
 
 .label {
 	display: block;
-	font-size: 28rpx;
-	color: #666;
+	font-size: 30rpx;
+	color: #2C3E50;
+	font-weight: 700;
 	margin-bottom: 20rpx;
 }
 
 .picker-value {
-	font-size: 30rpx;
-	color: #333;
-	padding: 10rpx 0;
+	font-size: 32rpx;
+	color: #5A6C7D;
+	padding: 16rpx 24rpx;
+	background: #F7F9FC;
+	border-radius: 12rpx;
+	border: 2rpx solid #E4E7ED;
+	transition: all 0.3s ease;
+}
+
+.picker-value:active {
+	background: #FFFFFF;
+	border-color: #FF6B35;
 }
 
 .input {
-	font-size: 30rpx;
-	color: #333;
+	font-size: 32rpx;
+	color: #2C3E50;
 	width: 100%;
+	padding: 16rpx 24rpx;
+	background: #F7F9FC;
+	border-radius: 12rpx;
+	border: 2rpx solid #E4E7ED;
+	transition: all 0.3s ease;
+}
+
+.input:focus {
+	background: #FFFFFF;
+	border-color: #FF6B35;
+	box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
 }
 
 .textarea {
-	font-size: 30rpx;
-	color: #333;
+	font-size: 32rpx;
+	color: #2C3E50;
 	width: 100%;
-	min-height: 150rpx;
-	padding: 10rpx 0;
+	min-height: 180rpx;
+	padding: 16rpx 24rpx;
+	background: #F7F9FC;
+	border-radius: 12rpx;
+	border: 2rpx solid #E4E7ED;
+	line-height: 1.6;
+	transition: all 0.3s ease;
+}
+
+.textarea:focus {
+	background: #FFFFFF;
+	border-color: #FF6B35;
+	box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
 }
 
 .submit-btn {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
 	text-align: center;
-	padding: 28rpx;
-	border-radius: 16rpx;
-	font-size: 32rpx;
-	font-weight: 600;
-	margin-top: 40rpx;
+	padding: 36rpx;
+	border-radius: 48rpx;
+	font-size: 34rpx;
+	font-weight: 700;
+	margin-top: 48rpx;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.35);
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.submit-btn::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+	transition: left 0.5s;
+}
+
+.submit-btn:active::before {
+	left: 100%;
+}
+
+.submit-btn:active {
+	transform: translateY(2rpx);
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
 }
 </style>

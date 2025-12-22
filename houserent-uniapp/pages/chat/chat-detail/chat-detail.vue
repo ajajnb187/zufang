@@ -287,17 +287,23 @@ export default {
 	height: 100vh;
 	display: flex;
 	flex-direction: column;
-	background: #f5f7fa;
+	background: linear-gradient(180deg, #F7F9FC 0%, #FFFFFF 100%);
 }
 
 .message-list {
 	flex: 1;
-	padding: 20rpx;
+	padding: 24rpx 30rpx;
 }
 
 .message-item {
 	display: flex;
-	margin-bottom: 30rpx;
+	margin-bottom: 32rpx;
+	animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+	from { opacity: 0; transform: translateY(20rpx); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 .message-item.is-mine {
@@ -305,20 +311,22 @@ export default {
 }
 
 .avatar {
-	width: 80rpx;
-	height: 80rpx;
+	width: 88rpx;
+	height: 88rpx;
 	border-radius: 50%;
 	margin: 0 20rpx;
+	border: 4rpx solid #FFE5D9;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .message-content {
-	max-width: 500rpx;
+	max-width: 520rpx;
 }
 
 .message-info {
 	display: flex;
 	align-items: center;
-	margin-bottom: 10rpx;
+	margin-bottom: 12rpx;
 }
 
 .is-mine .message-info {
@@ -327,8 +335,9 @@ export default {
 
 .nickname {
 	font-size: 24rpx;
-	color: #999;
+	color: #8B95A5;
 	margin-right: 12rpx;
+	font-weight: 500;
 }
 
 .is-mine .nickname {
@@ -338,72 +347,123 @@ export default {
 
 .time {
 	font-size: 22rpx;
-	color: #ccc;
+	color: #BDC3C7;
 }
 
 .message-text {
-	background: #fff;
-	padding: 20rpx 24rpx;
-	border-radius: 12rpx;
-	font-size: 28rpx;
-	line-height: 1.5;
+	background: #FFFFFF;
+	padding: 24rpx 28rpx;
+	border-radius: 20rpx;
+	font-size: 30rpx;
+	line-height: 1.6;
 	word-wrap: break-word;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+	position: relative;
+}
+
+.message-text::before {
+	content: '';
+	position: absolute;
+	top: 12rpx;
+	left: -12rpx;
+	width: 0;
+	height: 0;
+	border-top: 12rpx solid transparent;
+	border-bottom: 12rpx solid transparent;
+	border-right: 12rpx solid #FFFFFF;
 }
 
 .is-mine .message-text {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+}
+
+.is-mine .message-text::before {
+	left: auto;
+	right: -12rpx;
+	border-right: none;
+	border-left: 12rpx solid #FF8C61;
 }
 
 .empty {
 	text-align: center;
-	padding: 100rpx 0;
+	padding: 150rpx 40rpx;
+	animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
 }
 
 .empty-text {
 	font-size: 28rpx;
-	color: #999;
+	color: #8B95A5;
+	font-weight: 500;
 }
 
 .input-bar {
 	display: flex;
 	align-items: center;
-	padding: 20rpx;
-	background: #fff;
-	border-top: 1rpx solid #eee;
-	padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+	padding: 24rpx 30rpx;
+	background: #FFFFFF;
+	border-top: 1rpx solid #F2F6FC;
+	padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.04);
 }
 
 .message-input {
 	flex: 1;
-	background: #f5f7fa;
-	padding: 20rpx 24rpx;
-	border-radius: 40rpx;
-	font-size: 28rpx;
+	background: #F7F9FC;
+	padding: 24rpx 28rpx;
+	border-radius: 48rpx;
+	font-size: 30rpx;
 	margin-right: 20rpx;
+	color: #2C3E50;
+	border: 2rpx solid #E4E7ED;
+	transition: all 0.3s ease;
+}
+
+.message-input:focus {
+	background: #FFFFFF;
+	border-color: #FF6B35;
+	box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
 }
 
 .send-btn {
-	background: #409eff;
-	color: #fff;
-	padding: 20rpx 40rpx;
-	border-radius: 40rpx;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	padding: 24rpx 44rpx;
+	border-radius: 48rpx;
 	font-size: 28rpx;
+	font-weight: 700;
 	border: none;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+	transition: all 0.3s ease;
+}
+
+.send-btn:active {
+	transform: scale(0.95);
+	box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.3);
 }
 
 .muted-bar {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 30rpx 20rpx;
-	background: #fff3e0;
-	border-top: 1rpx solid #ffcc80;
-	padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+	padding: 32rpx 30rpx;
+	background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+	border-top: 2rpx solid #FFB74D;
+	padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.04);
 }
 
 .muted-text {
-	font-size: 26rpx;
-	color: #e65100;
+	font-size: 28rpx;
+	color: #E65100;
+	font-weight: 600;
+	text-align: center;
+	line-height: 1.6;
 }
 </style>

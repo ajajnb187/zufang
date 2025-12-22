@@ -231,62 +231,79 @@ export default {
 <style scoped>
 .search-page {
 	min-height: 100vh;
-	background: #f5f7fa;
+	background: #F7F9FC;
 }
 
 .search-bar {
 	display: flex;
 	align-items: center;
 	gap: 20rpx;
-	background: #fff;
-	padding: 20rpx;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	padding: 24rpx 30rpx;
+	box-shadow: 0 4rpx 20rpx rgba(255, 107, 53, 0.2);
 }
 
 .search-input-box {
 	flex: 1;
 	display: flex;
 	align-items: center;
-	background: #f5f7fa;
-	padding: 16rpx 24rpx;
-	border-radius: 50rpx;
+	background: rgba(255, 255, 255, 0.95);
+	padding: 18rpx 28rpx;
+	border-radius: 48rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .search-icon {
 	font-size: 32rpx;
 	margin-right: 16rpx;
+	filter: grayscale(0.3);
 }
 
 .search-input {
 	flex: 1;
-	font-size: 28rpx;
+	font-size: 30rpx;
+	color: #2C3E50;
 }
 
 .clear-icon {
-	font-size: 40rpx;
-	color: #999;
+	font-size: 44rpx;
+	color: #8B95A5;
 	padding: 0 12rpx;
+	transition: color 0.3s ease;
+}
+
+.clear-icon:active {
+	color: #5A6C7D;
 }
 
 .cancel-btn {
-	font-size: 28rpx;
-	color: #409eff;
+	font-size: 30rpx;
+	color: #FFFFFF;
+	font-weight: 600;
+	text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 .filter-section {
-	background: #fff;
-	padding: 20rpx;
+	background: #FFFFFF;
+	padding: 28rpx 30rpx;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .filter-row {
 	display: flex;
 	align-items: center;
-	margin-bottom: 20rpx;
+	margin-bottom: 24rpx;
+}
+
+.filter-row:last-child {
+	margin-bottom: 0;
 }
 
 .filter-label {
-	width: 100rpx;
-	font-size: 28rpx;
-	color: #666;
+	width: 110rpx;
+	font-size: 30rpx;
+	color: #2C3E50;
+	font-weight: 700;
 }
 
 .filter-options {
@@ -296,36 +313,68 @@ export default {
 
 .filter-option {
 	display: inline-block;
-	padding: 12rpx 24rpx;
-	margin-right: 16rpx;
-	background: #f5f7fa;
-	border-radius: 40rpx;
-	font-size: 26rpx;
-	color: #333;
+	padding: 14rpx 28rpx;
+	margin-right: 20rpx;
+	background: #F7F9FC;
+	border-radius: 48rpx;
+	font-size: 28rpx;
+	color: #5A6C7D;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	border: 2rpx solid transparent;
 }
 
 .filter-option.active {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+	transform: translateY(-2rpx);
 }
 
 .result-list {
 	height: calc(100vh - 300rpx);
+	padding: 0 0 20rpx 0;
 }
 
 .house-card {
 	display: flex;
-	background: #fff;
-	margin: 20rpx;
-	padding: 24rpx;
-	border-radius: 16rpx;
+	background: #FFFFFF;
+	margin: 24rpx 30rpx;
+	padding: 20rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.house-card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 6rpx;
+	height: 100%;
+	background: linear-gradient(180deg, #FF6B35, #4ECDC4);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.house-card:active {
+	transform: translateY(-4rpx);
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.house-card:active::before {
+	opacity: 1;
 }
 
 .house-img {
-	width: 200rpx;
-	height: 150rpx;
-	border-radius: 12rpx;
-	margin-right: 20rpx;
+	width: 220rpx;
+	height: 165rpx;
+	border-radius: 16rpx;
+	margin-right: 24rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .house-info {
@@ -336,42 +385,51 @@ export default {
 }
 
 .house-title {
-	font-size: 30rpx;
-	font-weight: 600;
+	font-size: 32rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	margin-bottom: 8rpx;
 }
 
 .house-tags {
 	display: flex;
 	gap: 12rpx;
+	margin: 12rpx 0;
 }
 
 .tag {
-	font-size: 24rpx;
-	color: #666;
-	background: #f5f7fa;
-	padding: 4rpx 12rpx;
-	border-radius: 6rpx;
+	font-size: 22rpx;
+	color: #5A6C7D;
+	background: linear-gradient(135deg, #F7F9FC, #EEF2F6);
+	padding: 6rpx 16rpx;
+	border-radius: 8rpx;
+	font-weight: 500;
+	border: 1rpx solid #E4E7ED;
 }
 
 .house-location {
 	font-size: 24rpx;
-	color: #999;
+	color: #8B95A5;
+	margin: 8rpx 0;
 }
 
 .house-price {
-	color: #ff6b6b;
+	color: #FF6B35;
 }
 
 .price-num {
-	font-size: 36rpx;
-	font-weight: bold;
+	font-size: 40rpx;
+	font-weight: 800;
+	letter-spacing: -1rpx;
 }
 
 .price-unit {
 	font-size: 24rpx;
+	font-weight: 500;
+	opacity: 0.9;
 }
 
 .empty {
@@ -379,15 +437,24 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	padding: 200rpx 40rpx;
+	animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(20rpx); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 .empty-icon {
-	font-size: 120rpx;
-	margin-bottom: 20rpx;
+	font-size: 140rpx;
+	margin-bottom: 32rpx;
+	opacity: 0.5;
+	filter: grayscale(0.5);
 }
 
 .empty-text {
 	font-size: 32rpx;
-	color: #999;
+	color: #8B95A5;
+	font-weight: 500;
 }
 </style>

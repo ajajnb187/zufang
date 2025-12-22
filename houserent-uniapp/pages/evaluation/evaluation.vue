@@ -175,120 +175,204 @@ export default {
 <style scoped>
 .evaluation-page {
 	min-height: 100vh;
-	background: #f5f7fa;
-	padding: 20rpx;
+	background: #F7F9FC;
+	padding: 24rpx 30rpx;
 }
 
 .target-card {
 	display: flex;
 	align-items: center;
-	background: #fff;
-	border-radius: 16rpx;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
+	background: linear-gradient(135deg, #FFF5F0, #FFFFFF);
+	border-radius: 24rpx;
+	padding: 36rpx;
+	margin-bottom: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	position: relative;
+	overflow: hidden;
+}
+
+.target-card::before {
+	content: '⭐';
+	position: absolute;
+	top: 20rpx;
+	right: 20rpx;
+	font-size: 60rpx;
+	opacity: 0.1;
 }
 
 .avatar {
-	width: 120rpx;
-	height: 120rpx;
+	width: 130rpx;
+	height: 130rpx;
 	border-radius: 50%;
-	margin-right: 30rpx;
+	margin-right: 32rpx;
+	border: 6rpx solid #FFE5D9;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.2);
 }
 
 .target-info {
 	flex: 1;
+	position: relative;
+	z-index: 1;
 }
 
 .nickname {
-	font-size: 36rpx;
-	font-weight: 600;
+	font-size: 38rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	margin-bottom: 12rpx;
 }
 
 .role {
 	font-size: 26rpx;
-	color: #999;
+	color: #8B95A5;
+	background: #F7F9FC;
+	padding: 6rpx 20rpx;
+	border-radius: 20rpx;
+	display: inline-block;
+	font-weight: 500;
 }
 
 .rating-section, .tags-section, .comment-section {
-	background: #fff;
-	border-radius: 16rpx;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
+	background: #FFFFFF;
+	border-radius: 24rpx;
+	padding: 36rpx;
+	margin-bottom: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 }
 
 .section-title {
-	font-size: 32rpx;
-	font-weight: 600;
-	margin-bottom: 30rpx;
+	font-size: 36rpx;
+	font-weight: 700;
+	color: #2C3E50;
+	margin-bottom: 32rpx;
+	padding-left: 16rpx;
+	border-left: 6rpx solid #FF6B35;
 }
 
 .stars {
 	display: flex;
 	justify-content: center;
-	gap: 20rpx;
-	margin-bottom: 20rpx;
+	gap: 24rpx;
+	margin-bottom: 24rpx;
 }
 
 .star {
-	font-size: 80rpx;
-	opacity: 0.3;
+	font-size: 88rpx;
+	opacity: 0.2;
+	transition: all 0.3s ease;
+	filter: grayscale(1);
+}
+
+.star:active {
+	transform: scale(1.2);
 }
 
 .star.active {
 	opacity: 1;
+	filter: grayscale(0) drop-shadow(0 4rpx 12rpx rgba(255, 215, 0, 0.4));
+	animation: starPop 0.3s ease;
+}
+
+@keyframes starPop {
+	0% { transform: scale(1); }
+	50% { transform: scale(1.3); }
+	100% { transform: scale(1); }
 }
 
 .rating-text {
 	text-align: center;
-	font-size: 32rpx;
-	color: #409eff;
-	font-weight: 600;
+	font-size: 34rpx;
+	color: #FF6B35;
+	font-weight: 700;
 }
 
 .tags-list {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 20rpx;
+	gap: 24rpx;
 }
 
 .tag-item {
-	padding: 16rpx 32rpx;
-	background: #f5f7fa;
-	border-radius: 50rpx;
+	padding: 18rpx 36rpx;
+	background: #F7F9FC;
+	border-radius: 48rpx;
 	font-size: 28rpx;
-	color: #666;
+	color: #5A6C7D;
+	font-weight: 500;
+	border: 2rpx solid #E4E7ED;
+	transition: all 0.3s ease;
+}
+
+.tag-item:active {
+	transform: scale(0.95);
 }
 
 .tag-item.active {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	border-color: transparent;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+	transform: translateY(-2rpx);
 }
 
 .comment-input {
 	width: 100%;
-	min-height: 300rpx;
-	padding: 20rpx;
-	background: #f5f7fa;
-	border-radius: 12rpx;
-	font-size: 28rpx;
-	line-height: 1.6;
+	min-height: 320rpx;
+	padding: 24rpx;
+	background: #F7F9FC;
+	border-radius: 16rpx;
+	font-size: 30rpx;
+	line-height: 1.8;
+	color: #2C3E50;
+	border: 2rpx solid #E4E7ED;
+	transition: all 0.3s ease;
+}
+
+.comment-input:focus {
+	background: #FFFFFF;
+	border-color: #FF6B35;
+	box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
 }
 
 .word-count {
 	text-align: right;
 	font-size: 24rpx;
-	color: #999;
-	margin-top: 12rpx;
+	color: #8B95A5;
+	margin-top: 16rpx;
+	font-weight: 500;
 }
 
 .submit-btn {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
 	text-align: center;
-	padding: 32rpx;
-	border-radius: 50rpx;
-	font-size: 32rpx;
-	font-weight: 600;
+	padding: 36rpx;
+	border-radius: 48rpx;
+	font-size: 34rpx;
+	font-weight: 700;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.35);
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.submit-btn::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+	transition: left 0.5s;
+}
+
+.submit-btn:active::before {
+	left: 100%;
+}
+
+.submit-btn:active {
+	transform: translateY(2rpx);
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
 }
 </style>

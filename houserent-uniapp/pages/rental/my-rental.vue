@@ -356,112 +356,143 @@ export default {
 <style scoped>
 .my-rental-page {
 	min-height: 100vh;
-	background: #f5f7fa;
+	background: #F7F9FC;
 }
 
 .status-tabs {
 	display: flex;
-	background: #fff;
-	padding: 20rpx;
+	background: #FFFFFF;
+	padding: 24rpx 30rpx;
 	white-space: nowrap;
 	position: sticky;
 	top: 0;
 	z-index: 10;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .tab-item {
 	display: inline-block;
-	padding: 16rpx 32rpx;
-	margin-right: 20rpx;
-	background: #f5f7fa;
-	border-radius: 40rpx;
+	padding: 16rpx 36rpx;
+	margin-right: 24rpx;
+	background: #F7F9FC;
+	border-radius: 48rpx;
 	font-size: 28rpx;
-	color: #666;
+	color: #5A6C7D;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	border: 2rpx solid transparent;
 }
 
 .tab-item.active {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+	transform: translateY(-2rpx);
 }
 
 .transaction-list {
-	height: calc(100vh - 100rpx);
-	padding: 20rpx;
+	height: calc(100vh - 120rpx);
+	padding: 24rpx 30rpx;
 }
 
 .transaction-card {
-	background: #fff;
-	border-radius: 16rpx;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+	background: #FFFFFF;
+	border-radius: 24rpx;
+	padding: 32rpx;
+	margin-bottom: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.transaction-card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 6rpx;
+	height: 100%;
+	background: linear-gradient(180deg, #FF6B35, #4ECDC4);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.transaction-card:active {
+	transform: translateY(-4rpx);
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.transaction-card:active::before {
+	opacity: 1;
 }
 
 .card-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 20rpx;
-	padding-bottom: 20rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	margin-bottom: 24rpx;
+	padding-bottom: 24rpx;
+	border-bottom: 1rpx solid #F7F9FC;
 }
 
 .house-title {
 	flex: 1;
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #333;
+	font-size: 34rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .status-badge {
-	padding: 8rpx 20rpx;
-	border-radius: 20rpx;
+	padding: 10rpx 24rpx;
+	border-radius: 24rpx;
 	font-size: 24rpx;
 	margin-left: 20rpx;
+	font-weight: 600;
 }
 
 .status-badge.signed,
 .status-badge.pending_checkin {
-	background: #fff3e0;
-	color: #ff9800;
+	background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+	color: #E65100;
 }
 
 .status-badge.living {
-	background: #e8f5e9;
-	color: #4caf50;
+	background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+	color: #2E7D32;
 }
 
 .status-badge.pending_complete {
-	background: #e3f2fd;
-	color: #2196f3;
+	background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+	color: #1565C0;
 }
 
 .status-badge.completed {
-	background: #f3e5f5;
-	color: #9c27b0;
+	background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+	color: #6A1B9A;
 }
 
 .status-badge.evaluated {
-	background: #fafafa;
-	color: #999;
+	background: #F7F9FC;
+	color: #8B95A5;
 }
 
 .status-badge.cancelled {
-	background: #ffebee;
-	color: #f44336;
+	background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+	color: #C62828;
 }
 
 .status-badge.terminated {
-	background: #ffebee;
-	color: #f44336;
+	background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+	color: #C62828;
 }
 
 .status-badge.expired {
-	background: #fafafa;
-	color: #909399;
+	background: #F7F9FC;
+	color: #8B95A5;
 }
 
 .card-body {
@@ -471,21 +502,24 @@ export default {
 .info-row {
 	display: flex;
 	justify-content: space-between;
-	padding: 12rpx 0;
+	padding: 16rpx 0;
 	font-size: 28rpx;
 }
 
 .info-row .label {
-	color: #999;
+	color: #8B95A5;
+	font-weight: 500;
 }
 
 .info-row .value {
-	color: #333;
+	color: #2C3E50;
+	font-weight: 600;
 }
 
 .info-row .value.rent-price {
-	color: #f56c6c;
-	font-weight: 600;
+	color: #FF6B35;
+	font-weight: 700;
+	font-size: 32rpx;
 }
 
 .info-row .value.contract-effective {
@@ -510,32 +544,41 @@ export default {
 
 .card-actions {
 	display: flex;
-	gap: 20rpx;
-	padding-top: 20rpx;
-	border-top: 1rpx solid #f0f0f0;
+	gap: 24rpx;
+	padding-top: 24rpx;
+	border-top: 1rpx solid #F7F9FC;
 }
 
 .action-btn {
 	flex: 1;
 	text-align: center;
-	padding: 20rpx;
-	border-radius: 50rpx;
+	padding: 24rpx;
+	border-radius: 48rpx;
 	font-size: 28rpx;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.action-btn:active {
+	transform: scale(0.95);
 }
 
 .action-btn.primary {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
 }
 
 .action-btn.secondary {
-	background: #f5f7fa;
-	color: #666;
+	background: #F7F9FC;
+	color: #5A6C7D;
+	border: 2rpx solid #E4E7ED;
 }
 
 .action-btn.disabled {
-	background: #f5f7fa;
-	color: #ccc;
+	background: #F7F9FC;
+	color: #D5DBDB;
+	border: 2rpx solid #EBEEF5;
 }
 
 .empty {
@@ -543,28 +586,46 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	padding: 200rpx 40rpx;
+	animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(20rpx); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 .empty-icon {
-	font-size: 120rpx;
-	margin-bottom: 20rpx;
+	font-size: 140rpx;
+	margin-bottom: 32rpx;
+	opacity: 0.5;
+	filter: grayscale(0.3);
 }
 
 .empty-text {
 	font-size: 32rpx;
-	color: #333;
-	margin-bottom: 12rpx;
+	color: #2C3E50;
+	font-weight: 600;
+	margin-bottom: 16rpx;
 }
 
 .empty-tip {
 	font-size: 26rpx;
-	color: #999;
+	color: #8B95A5;
+	text-align: center;
+	line-height: 1.6;
 }
 
 .loading-more {
 	text-align: center;
-	padding: 30rpx;
-	color: #999;
-	font-size: 26rpx;
+	padding: 40rpx;
+	color: #8B95A5;
+	font-size: 28rpx;
+	font-weight: 500;
+	animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
 }
 </style>

@@ -294,13 +294,14 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                 houseType = houseType.replace("室", "").replace("及以上", "");
             }
 
-            // 使用HouseMapper的自定义查询方法（支持地区筛选）
+            // 使用HouseMapper的自定义查询方法（支持地区筛选和租赁期限筛选）
             IPage<House> result = baseMapper.findHousesWithConditions(
                     page,
                     request.getCommunityId(),
                     request.getProvince(),
                     request.getCity(),
                     request.getDistrict(),
+                    request.getRentPeriod(),
                     houseType,
                     minPrice,
                     maxPrice,

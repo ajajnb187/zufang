@@ -583,7 +583,9 @@ export default {
 <style lang="scss" scoped>
 .login-container {
 	min-height: 100vh;
-	background: #ffffff;
+	background: linear-gradient(135deg, #FFE5D9 0%, #FFF5F0 50%, #E8F5F3 100%);
+	position: relative;
+	overflow: hidden;
 }
 
 /* 微注册插件登录弹窗 */
@@ -594,7 +596,8 @@ export default {
 	z-index: 99999999;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(0, 0, 0, 0.6);
+	background-color: rgba(44, 62, 80, 0.7);
+	backdrop-filter: blur(10rpx);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -608,18 +611,32 @@ export default {
 	z-index: 99999;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(0, 0, 0, 0.6);
+	background-color: rgba(44, 62, 80, 0.7);
+	backdrop-filter: blur(10rpx);
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
 }
 
 .setup-content {
 	width: 90%;
 	max-width: 600rpx;
 	background: #ffffff;
-	border-radius: 24rpx;
-	padding: 40rpx;
+	border-radius: 32rpx;
+	padding: 48rpx;
+	box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
+	animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+	from { transform: translateY(100rpx); opacity: 0; }
+	to { transform: translateY(0); opacity: 1; }
 }
 
 .setup-header {
@@ -629,16 +646,17 @@ export default {
 
 .setup-title {
 	display: block;
-	font-size: 36rpx;
-	font-weight: bold;
-	color: #333;
+	font-size: 40rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	margin-bottom: 16rpx;
 }
 
 .setup-subtitle {
 	display: block;
-	font-size: 24rpx;
-	color: #909399;
+	font-size: 26rpx;
+	color: #8B95A5;
+	line-height: 1.6;
 }
 
 .setup-form {
@@ -676,21 +694,23 @@ export default {
 	width: 140rpx;
 	height: 140rpx;
 	border-radius: 50%;
-	border: 4rpx solid #e0f2fe;
+	border: 6rpx solid #FFE5D9;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.2);
 }
 
 .avatar-edit-icon {
 	position: absolute;
 	right: 0;
 	bottom: 0;
-	width: 40rpx;
-	height: 40rpx;
-	background: #409eff;
+	width: 48rpx;
+	height: 48rpx;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 20rpx;
+	font-size: 24rpx;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
 }
 
 .nickname-section {
@@ -701,13 +721,21 @@ export default {
 
 .nickname-input {
 	width: 100%;
-	height: 80rpx;
-	background: #f5f7fa;
-	border-radius: 12rpx;
-	padding: 0 24rpx;
-	font-size: 28rpx;
-	color: #333;
+	height: 88rpx;
+	background: #F7F9FC;
+	border: 2rpx solid #E4E7ED;
+	border-radius: 16rpx;
+	padding: 0 28rpx;
+	font-size: 30rpx;
+	color: #2C3E50;
 	text-align: center;
+	transition: all 0.3s ease;
+}
+
+.nickname-input:focus {
+	background: #FFFFFF;
+	border-color: #FF6B35;
+	box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
 }
 
 .setup-actions {
@@ -717,22 +745,34 @@ export default {
 }
 
 .confirm-btn {
-	background: #409eff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
 	color: white;
-	border-radius: 40rpx;
-	height: 80rpx;
+	border-radius: 48rpx;
+	height: 88rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 28rpx;
+	font-size: 32rpx;
 	font-weight: 600;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.3);
+	transition: all 0.3s ease;
+}
+
+.confirm-btn:active {
+	transform: translateY(2rpx);
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
 }
 
 .skip-btn {
 	background: transparent;
-	color: #909399;
+	color: #8B95A5;
 	border: none;
-	font-size: 26rpx;
+	font-size: 28rpx;
+	transition: color 0.3s ease;
+}
+
+.skip-btn:active {
+	color: #5A6C7D;
 }
 
 .skip-btn::after {
@@ -744,27 +784,34 @@ export default {
 	position: relative;
 	height: 100vh;
 	overflow: hidden;
-	background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+	background: linear-gradient(135deg, #FFE5D9 0%, #FFF5F0 50%, #E8F5F3 100%);
 }
 
 .welcome-bg-circle1 {
 	position: absolute;
-	top: -100rpx;
-	right: -100rpx;
-	width: 400rpx;
-	height: 400rpx;
+	top: -150rpx;
+	right: -150rpx;
+	width: 500rpx;
+	height: 500rpx;
 	border-radius: 50%;
-	background: rgba(64, 158, 255, 0.1);
+	background: radial-gradient(circle, rgba(255, 107, 53, 0.15), transparent);
+	animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+	0%, 100% { transform: translate(0, 0) scale(1); }
+	50% { transform: translate(-20rpx, 20rpx) scale(1.05); }
 }
 
 .welcome-bg-circle2 {
 	position: absolute;
-	bottom: -50rpx;
-	left: -50rpx;
-	width: 300rpx;
-	height: 300rpx;
+	bottom: -100rpx;
+	left: -100rpx;
+	width: 400rpx;
+	height: 400rpx;
 	border-radius: 50%;
-	background: rgba(64, 158, 255, 0.08);
+	background: radial-gradient(circle, rgba(78, 205, 196, 0.12), transparent);
+	animation: float 8s ease-in-out infinite reverse;
 }
 
 .welcome-content {
@@ -785,34 +832,45 @@ export default {
 }
 
 .logo-box {
-	width: 180rpx;
-	height: 180rpx;
+	width: 200rpx;
+	height: 200rpx;
 	background: #ffffff;
-	border-radius: 40rpx;
+	border-radius: 50rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 20rpx 60rpx rgba(64, 158, 255, 0.15);
-	margin-bottom: 40rpx;
+	box-shadow: 0 20rpx 60rpx rgba(255, 107, 53, 0.2);
+	margin-bottom: 48rpx;
+	animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-10rpx); }
 }
 
 .logo-image {
-	width: 120rpx;
-	height: 120rpx;
+	width: 140rpx;
+	height: 140rpx;
 }
 
 .app-name {
-	font-size: 48rpx;
-	font-weight: bold;
-	color: #333;
-	margin-bottom: 16rpx;
-	letter-spacing: 2rpx;
+	font-size: 56rpx;
+	font-weight: 800;
+	color: #2C3E50;
+	margin-bottom: 20rpx;
+	letter-spacing: 3rpx;
+	background: linear-gradient(135deg, #FF6B35, #4ECDC4);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
 }
 
 .app-slogan {
-	font-size: 28rpx;
-	color: #909399;
-	letter-spacing: 1rpx;
+	font-size: 30rpx;
+	color: #5A6C7D;
+	letter-spacing: 2rpx;
+	font-weight: 500;
 }
 
 .button-section {
@@ -823,22 +881,45 @@ export default {
 }
 
 .primary-btn {
-	background: #409eff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
 	color: white;
 	border-radius: 60rpx;
-	height: 100rpx;
+	height: 108rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 32rpx;
-	font-weight: 600;
-	box-shadow: 0 10rpx 30rpx rgba(64, 158, 255, 0.3);
+	font-size: 34rpx;
+	font-weight: 700;
+	box-shadow: 0 12rpx 40rpx rgba(255, 107, 53, 0.35);
 	margin-bottom: 30rpx;
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.primary-btn::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+	transition: left 0.5s;
+}
+
+.primary-btn:active::before {
+	left: 100%;
+}
+
+.primary-btn:active {
+	transform: translateY(2rpx);
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.3);
 }
 
 .primary-btn .icon {
-	margin-right: 12rpx;
-	font-size: 36rpx;
+	margin-right: 16rpx;
+	font-size: 40rpx;
 }
 
 .secondary-btn {
@@ -859,16 +940,18 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	flex-wrap: wrap;
 }
 
 .agreement-text {
 	font-size: 24rpx;
-	color: #909399;
+	color: #8B95A5;
 }
 
 .link {
 	font-size: 24rpx;
-	color: #409eff;
+	color: #FF6B35;
+	font-weight: 500;
 }
 
 /* Form Page */
@@ -1098,21 +1181,28 @@ export default {
 
 .dev-btn {
 	flex: 1;
-	height: 80rpx;
-	border-radius: 40rpx;
-	font-size: 28rpx;
+	height: 88rpx;
+	border-radius: 48rpx;
+	font-size: 30rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.dev-btn:active {
+	transform: scale(0.98);
 }
 
 .dev-btn.tenant {
-	background: #e8f5e9;
-	color: #4caf50;
+	background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+	color: #2E7D32;
 }
 
 .dev-btn.landlord {
-	background: #fff3e0;
-	color: #ff9800;
+	background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+	color: #E65100;
 }
 </style>

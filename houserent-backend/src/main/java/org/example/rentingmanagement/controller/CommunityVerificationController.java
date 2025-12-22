@@ -181,6 +181,7 @@ public class CommunityVerificationController {
     public Result<Boolean> checkUserVerified(@RequestParam Long communityId) {
         Long userId = StpUtil.getLoginIdAsLong();
         boolean verified = communityVerificationService.isUserVerified(userId, communityId);
+        System.out.println("【认证检查】userId=" + userId + ", communityId=" + communityId + ", verified=" + verified);
         return Result.success(verified);
     }
 }

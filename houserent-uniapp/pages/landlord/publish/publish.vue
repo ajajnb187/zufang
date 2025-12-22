@@ -57,6 +57,14 @@
 						</view>
 					</picker>
 				</view>
+				<view class="form-item">
+					<text class="label">租赁期限</text>
+					<picker mode="selector" :value="rentPeriodIndex" :range="rentPeriods" @change="onRentPeriodChange">
+						<view class="picker">
+							{{ formData.rentPeriod || '请选择租赁期限' }}
+						</view>
+					</picker>
+				</view>
 			</view>
 			
 			<!-- 详细描述 -->
@@ -83,8 +91,10 @@ export default {
 			houseId: '',
 			communityIndex: 0,
 			paymentIndex: 0,
+			rentPeriodIndex: 0,
 			communityList: [],
 			paymentMethods: ['押一付一', '押一付三', '押二付一', '押三付三', '半年付', '年付'],
+			rentPeriods: ['短期', '长期'],
 			formData: {
 				images: [],
 				title: '',
@@ -94,6 +104,7 @@ export default {
 				roomType: '',
 				floor: '',
 				paymentMethod: '',
+				rentPeriod: '长期',
 				description: ''
 			}
 		}
@@ -162,6 +173,7 @@ export default {
 					houseType: this.formData.roomType,  // 后端字段名是houseType
 					floor: this.formData.floor,
 					paymentMethod: this.formData.paymentMethod,
+					rentPeriod: this.formData.rentPeriod,
 					description: this.formData.description,
 					publishStatus: 'draft'
 				}
@@ -240,6 +252,7 @@ export default {
 					houseType: this.formData.roomType,  // 后端字段名是houseType
 					floor: this.formData.floor,
 					paymentMethod: this.formData.paymentMethod,
+					rentPeriod: this.formData.rentPeriod,
 					description: this.formData.description,
 					publishStatus: 'pending'
 				}
@@ -296,6 +309,7 @@ export default {
 						roomType: house.houseType || '',
 						floor: house.floor || '',
 						paymentMethod: house.paymentMethod || '',
+						rentPeriod: house.rentPeriod || '长期',
 						description: house.description || '',
 						images: []
 					}
@@ -313,6 +327,14 @@ export default {
 						const paymentIndex = this.paymentMethods.findIndex(p => p === house.paymentMethod)
 						if (paymentIndex >= 0) {
 							this.paymentIndex = paymentIndex
+						}
+					}
+					
+					// 设置租赁期限选择器索引
+					if (house.rentPeriod) {
+						const rentPeriodIndex = this.rentPeriods.findIndex(p => p === house.rentPeriod)
+						if (rentPeriodIndex >= 0) {
+							this.rentPeriodIndex = rentPeriodIndex
 						}
 					}
 					
@@ -367,6 +389,12 @@ export default {
 		onPaymentChange(e) {
 			this.paymentIndex = e.detail.value
 			this.formData.paymentMethod = this.paymentMethods[e.detail.value]
+		},
+		
+		// 租赁期限选择
+		onRentPeriodChange(e) {
+			this.rentPeriodIndex = e.detail.value
+			this.formData.rentPeriod = this.rentPeriods[e.detail.value]
 		},
 		
 		// 上传图片到MinIO

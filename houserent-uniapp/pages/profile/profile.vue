@@ -48,11 +48,11 @@
 				<text class="menu-label">收益统计</text>
 				<text class="menu-arrow">›</text>
 			</view>
-			<view class="menu-item" v-if="userInfo.userType === 4" @click="switchToTenant">
+		<!-- 	<view class="menu-item" v-if="userInfo.userType === 4" @click="switchToTenant">
 				<text class="menu-icon">🏠</text>
 				<text class="menu-label">切换到租客视角</text>
 				<text class="menu-arrow">›</text>
-			</view>
+			</view> -->
 		</view>
 		
 		<view class="logout-btn" @click="logout">
@@ -325,97 +325,176 @@ export default {
 <style scoped>
 .profile-page {
 	min-height: 100vh;
-	background: #f5f7fa;
+	background: #F7F9FC;
 }
 
 .user-card {
 	display: flex;
 	align-items: center;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	padding: 60rpx 30rpx;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35 0%, #FF8C61 50%, #4ECDC4 100%);
+	padding: 80rpx 40rpx 60rpx;
+	color: #FFFFFF;
+	position: relative;
+	overflow: hidden;
+}
+
+.user-card::before {
+	content: '';
+	position: absolute;
+	top: -100rpx;
+	right: -100rpx;
+	width: 300rpx;
+	height: 300rpx;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.user-card::after {
+	content: '';
+	position: absolute;
+	bottom: -80rpx;
+	left: -80rpx;
+	width: 250rpx;
+	height: 250rpx;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.08);
 }
 
 .avatar {
-	width: 120rpx;
-	height: 120rpx;
+	width: 140rpx;
+	height: 140rpx;
 	border-radius: 50%;
-	margin-right: 30rpx;
+	margin-right: 32rpx;
+	border: 6rpx solid rgba(255, 255, 255, 0.3);
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
+	position: relative;
+	z-index: 1;
 }
 
 .user-info {
 	flex: 1;
+	position: relative;
+	z-index: 1;
 }
 
 .nickname {
-	font-size: 36rpx;
-	font-weight: 600;
+	font-size: 40rpx;
+	font-weight: 800;
 	margin-bottom: 12rpx;
+	text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
 }
 
 .user-type {
 	font-size: 26rpx;
-	opacity: 0.9;
+	opacity: 0.95;
+	background: rgba(255, 255, 255, 0.25);
+	padding: 8rpx 20rpx;
+	border-radius: 20rpx;
+	display: inline-block;
+	backdrop-filter: blur(10rpx);
 }
 
 .menu-section {
-	background: #fff;
-	margin-top: 20rpx;
+	background: #FFFFFF;
+	margin: 24rpx 30rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	overflow: hidden;
 }
 
 .menu-item {
 	display: flex;
 	align-items: center;
-	padding: 32rpx 30rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 36rpx 32rpx;
+	border-bottom: 1rpx solid #F7F9FC;
+	transition: all 0.3s ease;
+	position: relative;
+}
+
+.menu-item:last-child {
+	border-bottom: none;
+}
+
+.menu-item:active {
+	background: #F7F9FC;
+}
+
+.menu-item::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 6rpx;
+	height: 0;
+	background: linear-gradient(180deg, #FF6B35, #4ECDC4);
+	transition: height 0.3s ease;
+}
+
+.menu-item:active::after {
+	height: 60%;
 }
 
 .menu-icon {
-	font-size: 40rpx;
-	margin-right: 20rpx;
+	font-size: 44rpx;
+	margin-right: 24rpx;
+	filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 .menu-label {
 	flex: 1;
-	font-size: 30rpx;
+	font-size: 32rpx;
+	color: #2C3E50;
+	font-weight: 600;
 }
 
 .menu-arrow {
-	font-size: 40rpx;
-	color: #ccc;
+	font-size: 44rpx;
+	color: #E4E7ED;
 }
 
 .logout-btn {
-	background: #fff;
+	background: #FFFFFF;
 	margin: 40rpx 30rpx;
-	padding: 32rpx;
-	border-radius: 50rpx;
+	padding: 36rpx;
+	border-radius: 48rpx;
 	text-align: center;
 	font-size: 32rpx;
-	color: #f56c6c;
+	color: #F5222D;
+	font-weight: 700;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	transition: all 0.3s ease;
+}
+
+.logout-btn:active {
+	background: #FFF5F5;
+	transform: scale(0.98);
 }
 
 /* 头像编辑相关 */
 .avatar-wrapper {
 	position: relative;
-	margin-right: 30rpx;
+	margin-right: 32rpx;
 }
 
 .edit-badge {
 	position: absolute;
 	bottom: 0;
 	right: 0;
-	background: rgba(0,0,0,0.6);
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
 	font-size: 20rpx;
-	padding: 4rpx 12rpx;
-	border-radius: 16rpx;
+	padding: 6rpx 16rpx;
+	border-radius: 20rpx;
+	font-weight: 600;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.4);
 }
 
 .edit-tip {
-	font-size: 22rpx;
-	opacity: 0.7;
+	font-size: 24rpx;
+	opacity: 0.9;
 	margin-top: 8rpx;
+	text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 编辑弹窗 */
@@ -425,38 +504,58 @@ export default {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0,0,0,0.6);
+	background: rgba(44, 62, 80, 0.7);
+	backdrop-filter: blur(10rpx);
 	z-index: 9999;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
 }
 
 .edit-content {
 	width: 85%;
-	background: #fff;
-	border-radius: 24rpx;
+	background: #FFFFFF;
+	border-radius: 32rpx;
 	overflow: hidden;
+	box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.2);
+	animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+	from { transform: translateY(100rpx); opacity: 0; }
+	to { transform: translateY(0); opacity: 1; }
 }
 
 .edit-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 30rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 36rpx 40rpx;
+	border-bottom: 1rpx solid #F2F6FC;
+	background: linear-gradient(135deg, #FFF5F0, #FFFFFF);
 }
 
 .edit-title {
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #333;
+	font-size: 36rpx;
+	font-weight: 700;
+	color: #2C3E50;
 }
 
 .close-btn {
-	font-size: 48rpx;
-	color: #999;
+	font-size: 52rpx;
+	color: #8B95A5;
 	line-height: 1;
+	transition: color 0.3s ease;
+}
+
+.close-btn:active {
+	color: #5A6C7D;
 }
 
 .edit-form {
@@ -476,11 +575,20 @@ export default {
 
 .form-input {
 	width: 100%;
-	height: 80rpx;
-	background: #f5f7fa;
-	border-radius: 12rpx;
-	padding: 0 24rpx;
-	font-size: 28rpx;
+	height: 88rpx;
+	background: #F7F9FC;
+	border: 2rpx solid #E4E7ED;
+	border-radius: 16rpx;
+	padding: 0 28rpx;
+	font-size: 30rpx;
+	color: #2C3E50;
+	transition: all 0.3s ease;
+}
+
+.form-input:focus {
+	background: #FFFFFF;
+	border-color: #FF6B35;
+	box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
 }
 
 .avatar-item {
@@ -506,8 +614,9 @@ export default {
 	width: 140rpx;
 	height: 140rpx;
 	border-radius: 50%;
-	border: 4rpx solid #e0f2fe;
-	margin-bottom: 16rpx;
+	border: 6rpx solid #FFE5D9;
+	margin-bottom: 20rpx;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.2);
 }
 
 .avatar-btns {
@@ -528,13 +637,15 @@ export default {
 }
 
 .wx-btn {
-	background: #07c160;
-	color: #fff;
+	background: linear-gradient(135deg, #07C160, #06AE56);
+	color: #FFFFFF;
+	box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
 }
 
 .album-btn {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #4ECDC4, #44A3D5);
+	color: #FFFFFF;
+	box-shadow: 0 4rpx 12rpx rgba(78, 205, 196, 0.3);
 }
 
 .edit-actions {
@@ -545,21 +656,34 @@ export default {
 
 .cancel-btn, .save-btn {
 	flex: 1;
-	height: 80rpx;
-	border-radius: 40rpx;
-	font-size: 28rpx;
+	height: 88rpx;
+	border-radius: 48rpx;
+	font-size: 32rpx;
+	font-weight: 700;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	transition: all 0.3s ease;
 }
 
 .cancel-btn {
-	background: #f5f7fa;
-	color: #666;
+	background: #F7F9FC;
+	color: #5A6C7D;
+	border: 2rpx solid #E4E7ED;
+}
+
+.cancel-btn:active {
+	background: #EEF2F6;
 }
 
 .save-btn {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.35);
+}
+
+.save-btn:active {
+	transform: translateY(2rpx);
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
 }
 </style>

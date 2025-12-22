@@ -26,6 +26,7 @@ public interface HouseMapper extends BaseMapper<House> {
             "<if test='district != null and district != \"\"'>AND c.district = #{district} </if>" +
             "<if test='city != null and city != \"\"'>AND c.city = #{city} </if>" +
             "<if test='province != null and province != \"\"'>AND c.province = #{province} </if>" +
+            "<if test='rentPeriod != null and rentPeriod != \"\"'>AND h.rent_period = #{rentPeriod} </if>" +
             "<if test='houseType != null and houseType != \"\"'>AND h.house_type LIKE CONCAT('%', #{houseType}, '%') </if>" +
             "<if test='minPrice != null'>AND h.rent_price &gt;= #{minPrice} </if>" +
             "<if test='maxPrice != null'>AND h.rent_price &lt;= #{maxPrice} </if>" +
@@ -38,6 +39,7 @@ public interface HouseMapper extends BaseMapper<House> {
                                           @Param("province") String province,
                                           @Param("city") String city,
                                           @Param("district") String district,
+                                          @Param("rentPeriod") String rentPeriod,
                                           @Param("houseType") String houseType,
                                           @Param("minPrice") Double minPrice,
                                           @Param("maxPrice") Double maxPrice,

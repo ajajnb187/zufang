@@ -36,9 +36,9 @@ public class HouseSearchRequest {
     private String district;
 
     /**
-     * 租赁类型：whole整租, shared合租
+     * 租赁期限筛选：短期, 长期
      */
-    private String rentType;
+    private String rentPeriod;
 
     /**
      * 户型（如：1室、2室、3室）

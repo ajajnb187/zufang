@@ -72,7 +72,7 @@ public class HousePublishRequest {
     private String paymentMethod;
 
     /**
-     * 租赁期限
+     * 租赁期限：短期, 长期
      */
     private String rentPeriod;
 

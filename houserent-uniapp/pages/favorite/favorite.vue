@@ -105,26 +105,53 @@ export default {
 <style scoped>
 .favorite-page {
 	min-height: 100vh;
-	background: #f5f7fa;
+	background: #F7F9FC;
 }
 
 .house-list {
 	height: 100vh;
+	padding: 20rpx 0;
 }
 
 .house-card {
 	display: flex;
-	background: #fff;
-	margin: 20rpx;
-	padding: 24rpx;
-	border-radius: 16rpx;
+	background: #FFFFFF;
+	margin: 0 30rpx 24rpx;
+	padding: 20rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.house-card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 6rpx;
+	height: 100%;
+	background: linear-gradient(180deg, #FF6B35, #4ECDC4);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.house-card:active {
+	transform: translateY(-4rpx);
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.house-card:active::before {
+	opacity: 1;
 }
 
 .house-img {
-	width: 200rpx;
-	height: 150rpx;
-	border-radius: 12rpx;
-	margin-right: 20rpx;
+	width: 220rpx;
+	height: 165rpx;
+	border-radius: 16rpx;
+	margin-right: 24rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .house-info {
@@ -135,16 +162,19 @@ export default {
 }
 
 .house-title {
-	font-size: 30rpx;
-	font-weight: 600;
+	font-size: 32rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	margin-bottom: 8rpx;
 }
 
 .house-tags {
 	display: flex;
 	gap: 12rpx;
+	margin: 12rpx 0;
 }
 
 .tag {

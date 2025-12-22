@@ -12,6 +12,24 @@
 			</view>
 		</view>
 		
+		<!-- 快捷操作 -->
+		<view class="quick-actions">
+			<view class="action-grid">
+				<view class="action-card" @click="goPage('/pages/landlord/publish/publish')">
+					<view class="action-icon">➕</view>
+					<text class="action-title">发布房源</text>
+				</view>
+				<view class="action-card" @click="goPage('/pages/landlord/appointments/appointments')">
+					<view class="action-icon">📅</view>
+					<text class="action-title">预约管理</text>
+				</view>
+				<view class="action-card" @click="goPage('/pages/landlord/contract-create/contract-create')">
+					<view class="action-icon">📄</view>
+					<text class="action-title">发起合同</text>
+				</view>
+			</view>
+		</view>
+		
 		<!-- 房东功能菜单 -->
 		<view class="menu-section">
 			<view class="menu-item" @click="goPage('/pages/landlord/revenue/revenue')">
@@ -20,25 +38,25 @@
 				<text class="menu-arrow">›</text>
 			</view>
 			<view class="menu-item" @click="goPage('/pages/landlord/contracts/contracts')">
-				<text class="menu-icon">📄</text>
+				<text class="menu-icon">📝</text>
 				<text class="menu-label">合同管理</text>
 				<text class="menu-arrow">›</text>
 			</view>
-				<view class="menu-item" @click="goPage('/pages/community/auth/auth')">
-				<text class="menu-icon">🏘</text>
+			<view class="menu-item" @click="goPage('/pages/community/auth/auth')">
+				<text class="menu-icon">🏠</text>
 				<text class="menu-label">小区认证</text>
 				<text class="menu-arrow">›</text>
 			</view>
 		</view>
 		
 		<!-- 设置 -->
-		<view class="menu-section">
+<!-- 		<view class="menu-section">
 			<view class="menu-item" @click="switchToTenant">
 				<text class="menu-icon">🔄</text>
 				<text class="menu-label">切换到租客视角</text>
 				<text class="menu-arrow">›</text>
 			</view>
-		</view>
+		</view> -->
 		
 		<view class="logout-btn" @click="logout">
 			<text>退出登录</text>
@@ -352,25 +370,46 @@ export default {
 </script>
 
 <style scoped>
+
 .landlord-profile-page {
 	min-height: 100vh;
-	background: #f5f7fa;
+	background: #F7F9FC;
 	padding-bottom: 120rpx;
 }
 
 .user-card {
+	margin: 24rpx;
+	padding: 28rpx;
+	background: #FFFFFF;
+	border-radius: 20rpx;
 	display: flex;
 	align-items: center;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	padding: 60rpx 30rpx;
-	color: #fff;
+	border: 1rpx solid #EEF2F7;
+	box-shadow: 0 6rpx 18rpx rgba(17, 24, 39, 0.06);
+}
+
+.avatar-wrapper {
+	position: relative;
+	margin-right: 22rpx;
 }
 
 .avatar {
 	width: 120rpx;
 	height: 120rpx;
 	border-radius: 50%;
-	margin-right: 30rpx;
+	background: #F7F9FC;
+	border: 4rpx solid #FFF3ED;
+}
+
+.edit-badge {
+	position: absolute;
+	right: -6rpx;
+	bottom: -6rpx;
+	background: #FF6B35;
+	color: #FFFFFF;
+	font-size: 20rpx;
+	padding: 4rpx 14rpx;
+	border-radius: 999rpx;
 }
 
 .user-info {
@@ -379,40 +418,123 @@ export default {
 
 .nickname {
 	font-size: 36rpx;
-	font-weight: 600;
-	margin-bottom: 12rpx;
+	font-weight: 700;
+	color: #1F2937;
+	margin-bottom: 10rpx;
 }
 
 .user-type {
-	font-size: 28rpx;
-	opacity: 0.9;
-	background: rgba(255, 255, 255, 0.2);
-	padding: 8rpx 20rpx;
-	border-radius: 20rpx;
 	display: inline-block;
+	font-size: 24rpx;
+	font-weight: 600;
+	color: #FF6B35;
+	background: #FFF3ED;
+	padding: 6rpx 18rpx;
+	border-radius: 999rpx;
+}
+
+.edit-tip {
+	font-size: 24rpx;
+	color: #8B95A5;
+	margin-top: 10rpx;
+}
+
+.quick-actions {
+	margin: 0 24rpx 24rpx;
+}
+
+.action-grid {
+	display: flex;
+	gap: 18rpx;
+}
+
+.action-card {
+	flex: 1;
+	height: 180rpx;
+	background: #FFFFFF;
+	border-radius: 20rpx;
+	padding: 20rpx 12rpx;
+	border: 1rpx solid #EEF2F7;
+	box-shadow: 0 6rpx 18rpx rgba(17, 24, 39, 0.06);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+}
+
+.action-card:active {
+	transform: scale(0.99);
+}
+
+.action-card.primary {
+	background: #35ff5aff;
+	border-color: #FF6B35;
+}
+
+.action-icon {
+	font-size: 44rpx;
+	margin-bottom: 12rpx;
+}
+
+.action-title {
+	font-size: 30rpx;
+	font-weight: 700;
+	color: #1F2937;
+}
+
+.action-desc {
+	font-size: 24rpx;
+	color: #8B95A5;
+	margin-top: 6rpx;
+}
+
+.action-card.primary .action-icon,
+.action-card.primary .action-title,
+.action-card.primary .action-desc {
+	color: #FFFFFF;
+}
+
+.action-row {
+	display: flex;
+	gap: 18rpx;
+	margin-top: 18rpx;
+}
+
+.action-card.small {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 28rpx 16rpx;
+}
+
+.action-card.small .action-icon {
+	margin-bottom: 8rpx;
+}
+
+.action-card.small .action-title {
+	font-size: 28rpx;
 }
 
 .menu-section {
-	background: #fff;
-	margin: 20rpx;
-	border-radius: 16rpx;
+	margin: 0 24rpx 24rpx;
+	background: #FFFFFF;
+	border-radius: 20rpx;
+	border: 1rpx solid #EEF2F7;
 	overflow: hidden;
-}
-
-.section-title {
-	padding: 30rpx;
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #333;
-	background: #f8f9fa;
-	border-bottom: 1rpx solid #f0f0f0;
 }
 
 .menu-item {
 	display: flex;
 	align-items: center;
-	padding: 30rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 28rpx 22rpx;
+	border-bottom: 1rpx solid #F3F6FB;
+}
+
+.menu-item:active {
+	background: #F9FAFB;
 }
 
 .menu-item:last-child {
@@ -420,35 +542,40 @@ export default {
 }
 
 .menu-icon {
-	font-size: 40rpx;
-	margin-right: 24rpx;
 	width: 60rpx;
 	text-align: center;
+	font-size: 42rpx;
+	margin-right: 18rpx;
 }
 
 .menu-label {
 	flex: 1;
 	font-size: 30rpx;
-	color: #333;
+	color: #1F2937;
+	font-weight: 500;
 }
 
 .menu-arrow {
-	font-size: 32rpx;
-	color: #ccc;
+	font-size: 36rpx;
+	color: #C0C4CC;
 }
 
 .logout-btn {
-	background: #fff;
-	margin: 20rpx;
-	padding: 30rpx;
-	border-radius: 16rpx;
+	margin: 0 24rpx;
+	padding: 28rpx;
+	background: #FFFFFF;
+	border-radius: 20rpx;
 	text-align: center;
-	font-size: 32rpx;
-	color: #f56c6c;
+	font-size: 30rpx;
+	color: #FF4D4F;
 	font-weight: 600;
+	border: 1rpx solid #EEF2F7;
 }
 
-/* 底部导航栏 */
+.logout-btn:active {
+	background: #FFF1F0;
+}
+
 .tabbar {
 	position: fixed;
 	bottom: 0;
@@ -456,8 +583,8 @@ export default {
 	right: 0;
 	height: 100rpx;
 	display: flex;
-	background: #fff;
-	box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+	background: #FFFFFF;
+	border-top: 1rpx solid #EEF2F7;
 	padding-bottom: env(safe-area-inset-bottom);
 	z-index: 999;
 }
@@ -471,105 +598,86 @@ export default {
 }
 
 .tabbar-icon {
-	font-size: 40rpx;
+	font-size: 44rpx;
 	margin-bottom: 4rpx;
 }
 
 .tabbar-text {
 	font-size: 22rpx;
-	color: #999;
+	color: #8B95A5;
+	font-weight: 500;
 }
 
 .tabbar-item.active .tabbar-text {
-	color: #409eff;
+	color: #FF6B35;
+	font-weight: 600;
 }
 
-/* 头像编辑相关 */
-.avatar-wrapper {
-	position: relative;
-	margin-right: 30rpx;
-}
-
-.edit-badge {
-	position: absolute;
-	bottom: 0;
-	right: 0;
-	background: rgba(0,0,0,0.6);
-	color: #fff;
-	font-size: 20rpx;
-	padding: 4rpx 12rpx;
-	border-radius: 16rpx;
-}
-
-.edit-tip {
-	font-size: 22rpx;
-	opacity: 0.7;
-	margin-top: 8rpx;
-}
-
-/* 编辑弹窗 */
 .edit-modal {
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0,0,0,0.6);
+	background: rgba(0, 0, 0, 0.5);
 	z-index: 9999;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding: 40rpx;
 }
 
 .edit-content {
-	width: 85%;
-	background: #fff;
-	border-radius: 24rpx;
+	width: 100%;
+	max-height: 80vh;
+	background: #FFFFFF;
+	border-radius: 20rpx;
 	overflow: hidden;
 }
 
 .edit-header {
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
-	padding: 30rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	justify-content: space-between;
+	padding: 24rpx;
+	border-bottom: 1rpx solid #EEF2F7;
 }
 
 .edit-title {
 	font-size: 32rpx;
-	font-weight: 600;
-	color: #333;
+	font-weight: 700;
+	color: #1F2937;
 }
 
 .close-btn {
 	font-size: 48rpx;
-	color: #999;
+	color: #C0C4CC;
 	line-height: 1;
 }
 
 .edit-form {
-	padding: 30rpx;
+	padding: 24rpx;
 }
 
 .form-item {
-	margin-bottom: 30rpx;
+	margin-bottom: 24rpx;
 }
 
 .form-label {
 	display: block;
-	font-size: 28rpx;
-	color: #666;
-	margin-bottom: 16rpx;
+	font-size: 26rpx;
+	color: #5A6C7D;
+	margin-bottom: 12rpx;
 }
 
 .form-input {
 	width: 100%;
-	height: 80rpx;
-	background: #f5f7fa;
-	border-radius: 12rpx;
-	padding: 0 24rpx;
+	height: 84rpx;
+	background: #F7F9FC;
+	border-radius: 14rpx;
+	padding: 0 22rpx;
 	font-size: 28rpx;
+	border: 1rpx solid #EEF2F7;
 }
 
 .avatar-item {
@@ -578,77 +686,71 @@ export default {
 	align-items: center;
 }
 
-.avatar-choose-btn {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	background: transparent;
-	border: none;
-	padding: 0;
-}
-
-.avatar-choose-btn::after {
-	display: none;
-}
-
 .avatar-preview {
 	width: 140rpx;
 	height: 140rpx;
 	border-radius: 50%;
-	border: 4rpx solid #e0f2fe;
+	background: #F7F9FC;
+	border: 4rpx solid #FFF3ED;
 	margin-bottom: 16rpx;
 }
 
 .avatar-btns {
 	display: flex;
-	gap: 20rpx;
-	margin-top: 12rpx;
+	gap: 16rpx;
 }
 
 .avatar-btn {
-	padding: 12rpx 24rpx;
+	height: 64rpx;
+	padding: 0 20rpx;
+	border-radius: 999rpx;
 	font-size: 24rpx;
-	border-radius: 30rpx;
-	line-height: 1.5;
+	line-height: 64rpx;
 }
 
 .avatar-btn::after {
-	display: none;
+	border: none;
 }
 
 .wx-btn {
-	background: #07c160;
-	color: #fff;
+	background: #07C160;
+	color: #FFFFFF;
 }
 
 .album-btn {
-	background: #409eff;
-	color: #fff;
+	background: #FF6B35;
+	color: #FFFFFF;
 }
 
 .edit-actions {
 	display: flex;
-	padding: 30rpx;
-	gap: 20rpx;
+	gap: 16rpx;
+	padding: 20rpx 24rpx 28rpx;
+	border-top: 1rpx solid #EEF2F7;
 }
 
 .cancel-btn, .save-btn {
 	flex: 1;
-	height: 80rpx;
-	border-radius: 40rpx;
+	height: 76rpx;
+	border-radius: 999rpx;
 	font-size: 28rpx;
+	font-weight: 600;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .cancel-btn {
-	background: #f5f7fa;
-	color: #666;
+	background: #F7F9FC;
+	color: #5A6C7D;
 }
 
 .save-btn {
-	background: #409eff;
-	color: #fff;
+	background: #FF6B35;
+	color: #FFFFFF;
+}
+
+.cancel-btn::after, .save-btn::after {
+	border: none;
 }
 </style>

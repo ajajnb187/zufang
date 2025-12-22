@@ -146,22 +146,30 @@ export default {
 <style scoped>
 .chat-page {
 	min-height: 100vh;
-	background: #f5f7fa;
+	background: #F7F9FC;
 }
 
 /* 系统通知入口 */
 .notification-entry {
 	display: flex;
 	align-items: center;
-	padding: 30rpx;
-	background: #fff;
-	margin-bottom: 20rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 32rpx;
+	background: linear-gradient(135deg, #FFF5F0, #FFFFFF);
+	margin: 20rpx 30rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	transition: all 0.3s ease;
+}
+
+.notification-entry:active {
+	transform: translateY(-2rpx);
+	box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
 }
 
 .notification-icon {
-	font-size: 48rpx;
+	font-size: 52rpx;
 	margin-right: 24rpx;
+	filter: drop-shadow(0 2rpx 4rpx rgba(255, 107, 53, 0.2));
 }
 
 .notification-info {
@@ -170,15 +178,15 @@ export default {
 }
 
 .notification-title {
-	font-size: 32rpx;
-	font-weight: 500;
-	color: #333;
+	font-size: 34rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	display: block;
 }
 
 .notification-desc {
 	font-size: 26rpx;
-	color: #999;
+	color: #8B95A5;
 	display: block;
 	margin-top: 8rpx;
 	overflow: hidden;
@@ -187,33 +195,61 @@ export default {
 }
 
 .notification-badge {
-	min-width: 36rpx;
-	height: 36rpx;
-	line-height: 36rpx;
+	min-width: 40rpx;
+	height: 40rpx;
+	line-height: 40rpx;
 	text-align: center;
 	font-size: 22rpx;
-	color: #fff;
-	background: #f56c6c;
-	border-radius: 18rpx;
-	padding: 0 10rpx;
+	color: #FFFFFF;
+	background: linear-gradient(135deg, #F5222D, #FF4D4F);
+	border-radius: 20rpx;
+	padding: 0 12rpx;
 	margin-right: 16rpx;
+	box-shadow: 0 4rpx 12rpx rgba(245, 34, 45, 0.3);
+	font-weight: 700;
 }
 
 .notification-arrow {
-	font-size: 36rpx;
-	color: #ccc;
+	font-size: 40rpx;
+	color: #E4E7ED;
 }
 
 .chat-list {
-	height: calc(100vh - 140rpx);
+	height: calc(100vh - 160rpx);
 }
 
 .chat-item {
 	display: flex;
 	align-items: center;
-	padding: 30rpx;
-	background: #fff;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 32rpx;
+	background: #FFFFFF;
+	margin: 0 30rpx 20rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.chat-item::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 6rpx;
+	height: 100%;
+	background: linear-gradient(180deg, #FF6B35, #4ECDC4);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.chat-item:active {
+	transform: translateY(-4rpx);
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.chat-item:active::before {
+	opacity: 1;
 }
 
 .avatar-wrap {
@@ -222,24 +258,28 @@ export default {
 }
 
 .avatar {
-	width: 100rpx;
-	height: 100rpx;
+	width: 110rpx;
+	height: 110rpx;
 	border-radius: 50%;
+	border: 4rpx solid #FFE5D9;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .unread-badge {
 	position: absolute;
-	top: -10rpx;
-	right: -10rpx;
-	min-width: 36rpx;
-	height: 36rpx;
-	line-height: 36rpx;
+	top: -8rpx;
+	right: -8rpx;
+	min-width: 40rpx;
+	height: 40rpx;
+	line-height: 40rpx;
 	text-align: center;
 	font-size: 22rpx;
-	color: #fff;
-	background: #f56c6c;
-	border-radius: 18rpx;
-	padding: 0 8rpx;
+	color: #FFFFFF;
+	background: linear-gradient(135deg, #F5222D, #FF4D4F);
+	border-radius: 20rpx;
+	padding: 0 10rpx;
+	box-shadow: 0 4rpx 12rpx rgba(245, 34, 45, 0.3);
+	font-weight: 700;
 }
 
 .chat-info {
@@ -255,19 +295,20 @@ export default {
 }
 
 .nickname {
-	font-size: 32rpx;
-	font-weight: 500;
-	color: #333;
+	font-size: 34rpx;
+	font-weight: 700;
+	color: #2C3E50;
 }
 
 .time {
 	font-size: 24rpx;
-	color: #999;
+	color: #8B95A5;
+	font-weight: 500;
 }
 
 .last-message {
 	font-size: 28rpx;
-	color: #999;
+	color: #5A6C7D;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -278,28 +319,44 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	padding: 200rpx 40rpx;
+	animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(20rpx); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 .empty-icon {
-	font-size: 120rpx;
-	margin-bottom: 20rpx;
+	font-size: 140rpx;
+	margin-bottom: 32rpx;
+	opacity: 0.5;
+	filter: grayscale(0.3);
 }
 
 .empty-text {
 	font-size: 32rpx;
-	color: #666;
+	color: #2C3E50;
+	font-weight: 600;
 }
 
 .empty-hint {
 	font-size: 26rpx;
-	color: #999;
+	color: #8B95A5;
 	margin-top: 16rpx;
 }
 
 .loading {
 	text-align: center;
-	padding: 30rpx;
-	color: #999;
+	padding: 40rpx;
+	color: #8B95A5;
 	font-size: 28rpx;
+	font-weight: 500;
+	animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
 }
 </style>

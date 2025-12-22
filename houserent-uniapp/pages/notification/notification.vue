@@ -204,31 +204,59 @@ export default {
 <style scoped>
 .notification-page {
 	min-height: 100vh;
-	background: #f5f7fa;
-	padding-bottom: 120rpx;
+	background: #F7F9FC;
+	padding-bottom: 140rpx;
 }
 
 .notification-list {
-	height: calc(100vh - 120rpx);
+	height: calc(100vh - 140rpx);
+	padding: 20rpx 0;
 }
 
 .notification-item {
 	display: flex;
 	align-items: flex-start;
-	padding: 30rpx;
-	background: #fff;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 32rpx;
+	background: #FFFFFF;
+	margin: 0 30rpx 20rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 	position: relative;
+	transition: all 0.3s ease;
+	overflow: hidden;
+}
+
+.notification-item::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 6rpx;
+	height: 100%;
+	background: linear-gradient(180deg, #FF6B35, #4ECDC4);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.notification-item:active {
+	transform: translateY(-4rpx);
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.notification-item:active::before {
+	opacity: 1;
 }
 
 .notification-item.unread {
-	background: #f8faff;
+	background: linear-gradient(135deg, #FFF5F0, #FFFFFF);
+	border-left: 4rpx solid #FF6B35;
 }
 
 .notification-icon {
-	font-size: 48rpx;
+	font-size: 52rpx;
 	margin-right: 24rpx;
 	flex-shrink: 0;
+	filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 .notification-content {
@@ -244,9 +272,9 @@ export default {
 }
 
 .notification-title {
-	font-size: 30rpx;
-	font-weight: 500;
-	color: #333;
+	font-size: 32rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	flex: 1;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -255,15 +283,16 @@ export default {
 
 .notification-time {
 	font-size: 24rpx;
-	color: #999;
+	color: #8B95A5;
 	margin-left: 20rpx;
 	flex-shrink: 0;
+	font-weight: 500;
 }
 
 .notification-body {
 	font-size: 28rpx;
-	color: #666;
-	line-height: 1.5;
+	color: #5A6C7D;
+	line-height: 1.6;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
@@ -272,12 +301,19 @@ export default {
 
 .unread-dot {
 	position: absolute;
-	top: 30rpx;
-	right: 30rpx;
-	width: 16rpx;
-	height: 16rpx;
-	background: #f56c6c;
+	top: 32rpx;
+	right: 32rpx;
+	width: 20rpx;
+	height: 20rpx;
+	background: linear-gradient(135deg, #F5222D, #FF4D4F);
 	border-radius: 50%;
+	box-shadow: 0 4rpx 12rpx rgba(245, 34, 45, 0.4);
+	animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% { transform: scale(1); opacity: 1; }
+	50% { transform: scale(1.1); opacity: 0.8; }
 }
 
 .empty {
@@ -285,24 +321,37 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	padding: 200rpx 40rpx;
+	animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(20rpx); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 .empty-icon {
-	font-size: 120rpx;
-	margin-bottom: 20rpx;
+	font-size: 140rpx;
+	margin-bottom: 32rpx;
 	opacity: 0.5;
+	filter: grayscale(0.3);
 }
 
 .empty-text {
 	font-size: 32rpx;
-	color: #999;
+	color: #8B95A5;
+	font-weight: 600;
 }
 
 .loading, .no-more {
 	text-align: center;
-	padding: 30rpx;
-	color: #999;
+	padding: 40rpx;
+	color: #8B95A5;
 	font-size: 28rpx;
+	font-weight: 500;
+}
+
+.loading {
+	animation: pulse 1.5s ease-in-out infinite;
 }
 
 .bottom-bar {
@@ -310,20 +359,29 @@ export default {
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding: 20rpx 30rpx;
-	background: #fff;
-	box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
-	padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+	padding: 24rpx 30rpx;
+	background: #FFFFFF;
+	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+	padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+	backdrop-filter: blur(10rpx);
 }
 
 .mark-all-btn {
 	width: 100%;
-	height: 88rpx;
-	line-height: 88rpx;
-	background: #409eff;
-	color: #fff;
+	height: 92rpx;
+	line-height: 92rpx;
+	background: linear-gradient(135deg, #4ECDC4, #44A3D5);
+	color: #FFFFFF;
 	font-size: 32rpx;
-	border-radius: 44rpx;
+	font-weight: 700;
+	border-radius: 48rpx;
 	border: none;
+	box-shadow: 0 8rpx 24rpx rgba(78, 205, 196, 0.35);
+	transition: all 0.3s ease;
+}
+
+.mark-all-btn:active {
+	transform: translateY(2rpx);
+	box-shadow: 0 4rpx 12rpx rgba(78, 205, 196, 0.3);
 }
 </style>

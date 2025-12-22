@@ -87,8 +87,7 @@
 				</view>
 				<view class="info-item">
 					<text class="info-label">联系电话</text>
-					<text class="info-value phone" v-if="isVerified" @click="callPhone">{{ houseInfo.contactPhone || '-' }}</text>
-					<text class="info-value not-verified" v-else @click="goVerify">认证后查看</text>
+					<text class="info-value phone" @click="callPhone">{{ houseInfo.contactPhone || '-' }}</text>
 				</view>
 			</view>
 		</view>
@@ -113,14 +112,11 @@
 		<!-- 底部操作栏 -->
 		<view class="bottom-bar">
 			<view class="action-icons">
-				<!-- 微信小程序分享按钮，必须使用button的open-type="share" -->
-				<button class="share-btn" open-type="share">
+				<button class="icon-btn" open-type="share">
 					<text class="icon">📤</text>
-					<text class="icon-label">分享</text>
 				</button>
-				<view class="icon-item" @click="reportHouse">
+				<view class="icon-btn" @click="reportHouse">
 					<text class="icon">🚨</text>
-					<text class="icon-label">举报</text>
 				</view>
 			</view>
 			<view class="action-btns">
@@ -142,8 +138,7 @@ export default {
 			houseImages: [],
 			landlordInfo: null,
 			isFavorited: false,
-			facilitiesList: [],
-			isVerified: false // 是否已通过小区认证
+			facilitiesList: []
 		}
 	},
 	
@@ -165,12 +160,6 @@ export default {
 		this.loadHouseDetail()
 	},
 	
-	onShow() {
-		// 重新进入页面时检查认证状态
-		if (this.houseInfo.communityId) {
-			this.checkVerification(this.houseInfo.communityId)
-		}
-	},
 	
 	// 分享给好友（微信小程序必需的生命周期函数）
 	onShareAppMessage() {
@@ -228,27 +217,9 @@ export default {
 					
 					// 收藏状态（后端已返回）
 					this.isFavorited = res.data.isFavorited || false
-					
-					// 检查用户是否已通过该小区认证
-					if (res.data.communityId) {
-						this.checkVerification(res.data.communityId)
-					}
 				}
 			} catch (e) {
 				console.error('加载房源详情失败:', e)
-			}
-		},
-		
-		// 检查小区认证状态
-		async checkVerification(communityId) {
-			try {
-				const res = await api.communityVerification.check(communityId)
-				if (res.code === 200) {
-					this.isVerified = res.data === true
-				}
-			} catch (e) {
-				// 未登录或检查失败，默认未认证
-				this.isVerified = false
 			}
 		},
 		
@@ -316,10 +287,6 @@ export default {
 		
 		// 拨打电话
 		callPhone() {
-			if (!this.isVerified) {
-				this.goVerify()
-				return
-			}
 			if (this.houseInfo.contactPhone) {
 				uni.makePhoneCall({
 					phoneNumber: this.houseInfo.contactPhone,
@@ -328,20 +295,6 @@ export default {
 					}
 				})
 			}
-		},
-		
-		// 跳转到小区认证页面
-		goVerify() {
-			uni.showModal({
-				title: '需要小区认证',
-				content: '认证通过后可查看联系电话、发布房源等功能',
-				confirmText: '去认证',
-				success: (res) => {
-					if (res.confirm) {
-						uni.navigateTo({ url: '/pages/community/auth/auth' })
-					}
-				}
-			})
 		},
 		
 		// 获取设施图标
@@ -398,13 +351,14 @@ export default {
 <style scoped>
 .detail-page {
 	min-height: 100vh;
-	background: #f5f7fa;
-	padding-bottom: 160rpx;
+	background: #F7F9FC;
+	padding-bottom: 180rpx;
 }
 
 .house-swiper {
 	width: 100%;
-	height: 500rpx;
+	height: 550rpx;
+	position: relative;
 }
 
 .swiper-img {
@@ -413,29 +367,36 @@ export default {
 }
 
 .house-info {
-	background: #fff;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
+	background: #FFFFFF;
+	padding: 36rpx;
+	margin: -40rpx 24rpx 24rpx;
+	border-radius: 32rpx;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+	position: relative;
+	z-index: 10;
 }
 
 .price-row {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 20rpx;
+	margin-bottom: 24rpx;
 }
 
 .price {
-	color: #ff6b6b;
+	color: #FF6B35;
 }
 
 .price-num {
-	font-size: 48rpx;
-	font-weight: bold;
+	font-size: 56rpx;
+	font-weight: 800;
+	letter-spacing: -1rpx;
 }
 
 .price-unit {
 	font-size: 28rpx;
+	font-weight: 500;
+	opacity: 0.9;
 }
 
 .favorite-btn {
@@ -443,58 +404,84 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	gap: 8rpx;
+	padding: 12rpx 20rpx;
+	border-radius: 48rpx;
+	background: #FFF5F0;
+	transition: all 0.3s ease;
+}
+
+.favorite-btn:active {
+	transform: scale(0.95);
 }
 
 .fav-icon {
 	font-size: 48rpx;
 	transition: transform 0.3s;
+	filter: drop-shadow(0 2rpx 4rpx rgba(255, 107, 53, 0.2));
 }
 
 .fav-icon.favorited {
 	transform: scale(1.2);
+	animation: heartBeat 0.5s ease;
+}
+
+@keyframes heartBeat {
+	0%, 100% { transform: scale(1.2); }
+	50% { transform: scale(1.4); }
 }
 
 .fav-text {
 	font-size: 22rpx;
-	color: #999;
+	color: #FF6B35;
+	font-weight: 600;
 }
 
 .title {
-	font-size: 36rpx;
-	font-weight: 600;
-	margin-bottom: 20rpx;
+	font-size: 40rpx;
+	font-weight: 700;
+	color: #2C3E50;
+	margin-bottom: 24rpx;
+	line-height: 1.4;
 }
 
 .tags {
 	display: flex;
 	gap: 16rpx;
-	margin-bottom: 20rpx;
+	margin-bottom: 24rpx;
+	flex-wrap: wrap;
 }
 
 .tag {
 	font-size: 24rpx;
-	color: #666;
-	background: #f5f7fa;
-	padding: 8rpx 16rpx;
-	border-radius: 8rpx;
+	color: #5A6C7D;
+	background: linear-gradient(135deg, #F7F9FC, #EEF2F6);
+	padding: 10rpx 20rpx;
+	border-radius: 12rpx;
+	font-weight: 500;
+	border: 1rpx solid #E4E7ED;
 }
 
 .address {
 	font-size: 28rpx;
-	color: #666;
+	color: #5A6C7D;
+	padding: 16rpx 20rpx;
+	background: #F7F9FC;
+	border-radius: 12rpx;
+	margin-bottom: 16rpx;
 }
 
 .stats-row {
 	display: flex;
-	gap: 30rpx;
-	margin-top: 16rpx;
-	padding-top: 16rpx;
-	border-top: 1rpx solid #eee;
+	gap: 40rpx;
+	margin-top: 20rpx;
+	padding-top: 20rpx;
+	border-top: 1rpx solid #F2F6FC;
 }
 
 .stat-item {
 	font-size: 24rpx;
-	color: #999;
+	color: #8B95A5;
+	font-weight: 500;
 }
 
 .icon {
@@ -505,74 +492,89 @@ export default {
 .info-grid {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
-	gap: 20rpx;
+	gap: 24rpx;
 }
 
 .info-item {
 	display: flex;
-	justify-content: space-between;
-	padding: 16rpx 0;
-	border-bottom: 1rpx solid #f5f5f5;
+	flex-direction: column;
+	gap: 12rpx;
+	padding: 20rpx;
+	background: #F7F9FC;
+	border-radius: 16rpx;
+	border: 1rpx solid #E4E7ED;
 }
 
 .info-label {
-	font-size: 28rpx;
-	color: #999;
-}
-
-.info-value {
-	font-size: 28rpx;
-	color: #333;
+	font-size: 24rpx;
+	color: #8B95A5;
 	font-weight: 500;
 }
 
-.info-value.phone {
-	color: #409eff;
+.info-value {
+	font-size: 30rpx;
+	color: #2C3E50;
+	font-weight: 600;
 }
 
-.info-value.not-verified {
-	color: #f56c6c;
-	font-size: 24rpx;
+.info-value.phone {
+	color: #FF6B35;
 }
+
 
 /* 配套设施网格 */
 .facilities-grid {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 20rpx;
+	gap: 24rpx;
 }
 
 .facility-item {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	width: calc(25% - 15rpx);
-	padding: 16rpx 0;
+	width: calc(25% - 18rpx);
+	padding: 24rpx 12rpx;
+	background: #F7F9FC;
+	border-radius: 16rpx;
+	border: 1rpx solid #E4E7ED;
+	transition: all 0.3s ease;
+}
+
+.facility-item:active {
+	background: #EEF2F6;
+	transform: scale(0.95);
 }
 
 .facility-icon {
-	font-size: 40rpx;
-	margin-bottom: 8rpx;
+	font-size: 44rpx;
+	margin-bottom: 12rpx;
+	filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 .facility-name {
 	font-size: 24rpx;
-	color: #666;
+	color: #5A6C7D;
+	font-weight: 500;
 }
 
 .landlord-info {
 	display: flex;
 	align-items: center;
-	background: #fff;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
+	background: #FFFFFF;
+	padding: 32rpx;
+	margin: 0 24rpx 24rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 }
 
 .avatar {
-	width: 100rpx;
-	height: 100rpx;
+	width: 110rpx;
+	height: 110rpx;
 	border-radius: 50%;
-	margin-right: 20rpx;
+	margin-right: 24rpx;
+	border: 4rpx solid #FFE5D9;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.15);
 }
 
 .info {
@@ -580,40 +582,61 @@ export default {
 }
 
 .name {
-	font-size: 32rpx;
-	font-weight: 600;
+	font-size: 34rpx;
+	font-weight: 700;
+	color: #2C3E50;
 	margin-bottom: 8rpx;
 }
 
 .desc {
 	font-size: 24rpx;
-	color: #999;
+	color: #8B95A5;
+	background: #F7F9FC;
+	padding: 6rpx 16rpx;
+	border-radius: 8rpx;
+	display: inline-block;
 }
 
 .chat-btn {
-	background: #409eff;
-	color: #fff;
-	padding: 16rpx 40rpx;
-	border-radius: 50rpx;
+	background: linear-gradient(135deg, #4ECDC4, #44A3D5);
+	color: #FFFFFF;
+	padding: 20rpx 44rpx;
+	border-radius: 48rpx;
 	font-size: 28rpx;
+	font-weight: 600;
+	box-shadow: 0 4rpx 12rpx rgba(78, 205, 196, 0.3);
+	transition: all 0.3s ease;
+}
+
+.chat-btn:active {
+	transform: scale(0.95);
 }
 
 .section {
-	background: #fff;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
+	background: #FFFFFF;
+	padding: 36rpx;
+	margin: 0 24rpx 24rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 }
 
 .section-title {
-	font-size: 32rpx;
-	font-weight: 600;
-	margin-bottom: 20rpx;
+	font-size: 36rpx;
+	font-weight: 700;
+	color: #2C3E50;
+	margin-bottom: 28rpx;
+	padding-left: 16rpx;
+	border-left: 6rpx solid #FF6B35;
 }
 
 .description {
-	font-size: 28rpx;
-	color: #666;
-	line-height: 1.8;
+	font-size: 30rpx;
+	color: #5A6C7D;
+	line-height: 2;
+	padding: 20rpx;
+	background: #F7F9FC;
+	border-radius: 16rpx;
+	border-left: 4rpx solid #4ECDC4;
 }
 
 .bottom-bar {
@@ -623,51 +646,40 @@ export default {
 	right: 0;
 	display: flex;
 	align-items: center;
-	gap: 20rpx;
-	background: #fff;
-	padding: 20rpx;
-	box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
-	padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+	gap: 24rpx;
+	background: #FFFFFF;
+	padding: 24rpx 30rpx;
+	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+	padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+	backdrop-filter: blur(10rpx);
 }
 
 .action-icons {
 	display: flex;
-	gap: 30rpx;
+	align-items: center;
+	gap: 16rpx;
 }
 
-.icon-item {
+.icon-btn {
 	display: flex;
-	flex-direction: column;
 	align-items: center;
-}
-
-/* 分享按钮样式（重置button默认样式） */
-.share-btn {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	background: transparent;
+	justify-content: center;
+	width: 72rpx;
+	height: 72rpx;
+	background: #F7F9FC;
 	border: none;
+	border-radius: 50%;
 	padding: 0;
 	margin: 0;
 	line-height: 1;
-	font-size: inherit;
 }
 
-.share-btn::after {
+.icon-btn::after {
 	border: none;
 }
 
-.share-btn .icon,
-.icon-item .icon {
-	font-size: 40rpx;
-	margin-bottom: 4rpx;
-}
-
-.share-btn .icon-label,
-.icon-item .icon-label {
-	font-size: 22rpx;
-	color: #666;
+.icon-btn .icon {
+	font-size: 36rpx;
 }
 
 .action-btns {
@@ -679,18 +691,28 @@ export default {
 .btn {
 	flex: 1;
 	text-align: center;
-	padding: 28rpx;
-	border-radius: 50rpx;
+	padding: 32rpx;
+	border-radius: 48rpx;
 	font-size: 32rpx;
+	font-weight: 700;
+	transition: all 0.3s ease;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.btn:active {
+	transform: translateY(2rpx);
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .btn-secondary {
-	background: #f5f7fa;
-	color: #333;
+	background: linear-gradient(135deg, #F7F9FC, #EEF2F6);
+	color: #2C3E50;
+	border: 2rpx solid #E4E7ED;
 }
 
 .btn-primary {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.35);
 }
 </style>

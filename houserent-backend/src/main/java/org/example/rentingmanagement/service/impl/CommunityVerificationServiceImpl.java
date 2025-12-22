@@ -193,7 +193,9 @@ public class CommunityVerificationServiceImpl extends ServiceImpl<CommunityVerif
     @Override
     public boolean isUserVerified(Long userId, Long communityId) {
         try {
-            return baseMapper.isUserVerified(userId, communityId);
+            boolean result = baseMapper.isUserVerified(userId, communityId);
+            log.info("【认证检查Service】userId={}, communityId={}, result={}", userId, communityId, result);
+            return result;
         } catch (Exception e) {
             log.error("检查用户认证状态失败: userId={}, communityId={}", userId, communityId, e);
             return false;

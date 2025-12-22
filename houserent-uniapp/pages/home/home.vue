@@ -21,10 +21,10 @@
 				全部
 			</view>
 			<view class="tab-item" :class="{ active: activeTab === 1 }" @click="switchTab(1)">
-				整租
+				短期
 			</view>
 			<view class="tab-item" :class="{ active: activeTab === 2 }" @click="switchTab(2)">
-				合租
+				长期
 			</view>
 		</scroll-view>
 		
@@ -83,24 +83,32 @@
 		
 		<!-- 房源列表 -->
 		<scroll-view class="house-list" scroll-y enable-flex @scrolltolower="loadMore">
-			<view class="house-card" v-for="house in houseList" :key="house.houseId" @click="viewDetail(house.houseId)">
-				<image class="house-img" :src="house.coverImage || '/static/logo.png'" mode="aspectFill" @error="house.coverImage = '/static/logo.png'"></image>
-				<view class="house-info">
-					<view class="house-title">{{ house.title }}</view>
-					<view class="house-tags">
-						<text class="tag">{{ house.area }}㎡</text>
-						<text class="tag">{{ house.houseType || house.roomType }}</text>
-						<text class="tag" v-if="house.floor">{{ house.floor }}层</text>
-						<text class="tag" v-if="house.orientation">{{ house.orientation }}</text>
-					</view>
-					<view class="house-location">📍 {{ house.communityName }}</view>
-					<view class="house-bottom">
-						<view class="house-price">
+			<view class="house-grid">
+				<view class="house-card" v-for="house in houseList" :key="house.houseId" @click="viewDetail(house.houseId)">
+					<!-- 房源图片 -->
+					<view class="card-image-wrapper">
+						<image class="card-image" :src="house.coverImage || '/static/logo.png'" mode="aspectFill" @error="house.coverImage = '/static/logo.png'"></image>
+						<!-- 价格标签 -->
+						<view class="price-tag">
 							<text class="price-num">{{ house.rentPrice }}</text>
 							<text class="price-unit">元/月</text>
 						</view>
-						<view class="house-stats" v-if="house.viewCount">
-							<text class="stats-text">{{ house.viewCount }}次浏览</text>
+						<!-- 浏览数 -->
+						<view class="view-badge" v-if="house.viewCount">
+							<text>👁️ {{ house.viewCount }}</text>
+						</view>
+					</view>
+					<!-- 房源信息 -->
+					<view class="card-content">
+						<view class="card-title">{{ house.title }}</view>
+						<view class="card-tags">
+							<text class="card-tag">{{ house.houseType || house.roomType }}</text>
+							<text class="card-tag">{{ house.area }}㎡</text>
+							<text class="card-tag" v-if="house.orientation">{{ house.orientation }}</text>
+						</view>
+						<view class="card-location">
+							<text class="location-icon">📍</text>
+							<text class="location-text">{{ house.communityName }}</text>
 						</view>
 					</view>
 				</view>
@@ -108,10 +116,11 @@
 			
 			<!-- 加载状态 -->
 			<view class="load-more" v-if="loading">
+				<view class="loading-spinner"></view>
 				<text>加载中...</text>
 			</view>
 			<view class="no-more" v-if="noMore">
-				<text>没有更多了</text>
+				<text>—— 已经到底了 ——</text>
 			</view>
 		</scroll-view>
 		
@@ -253,11 +262,11 @@ export default {
 					params.district = this.selectedDistrict
 				}
 				
-				// 租赁类型筛选：0-全部 1-整租 2-合租
+				// 租赁期限筛选：0-全部 1-短期 2-长期
 				if (this.activeTab === 1) {
-					params.rentType = 'whole'
+					params.rentPeriod = '短期'
 				} else if (this.activeTab === 2) {
-					params.rentType = 'shared'
+					params.rentPeriod = '长期'
 				}
 				
 				console.log('【首页】搜索参数:', params)
@@ -340,7 +349,7 @@ export default {
 <style scoped>
 .home-page {
 	min-height: 100vh;
-	background: #f5f7fa;
+	background: #F7F9FC;
 }
 
 /* 顶部栏 */
@@ -348,39 +357,45 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 20rpx;
-	background: #fff;
-	padding: 20rpx;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	padding: 24rpx 30rpx;
 	position: sticky;
 	top: 0;
 	z-index: 100;
+	box-shadow: 0 4rpx 20rpx rgba(255, 107, 53, 0.2);
 }
 
 .location-selector {
 	display: flex;
 	align-items: center;
-	padding: 16rpx 20rpx;
-	background: #f5f7fa;
-	border-radius: 40rpx;
+	padding: 16rpx 24rpx;
+	background: rgba(255, 255, 255, 0.25);
+	backdrop-filter: blur(10rpx);
+	border-radius: 48rpx;
 	min-width: 180rpx;
+	border: 1rpx solid rgba(255, 255, 255, 0.3);
 }
 
 .location-icon {
 	font-size: 28rpx;
 	margin-right: 8rpx;
+	filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 .location-text {
 	font-size: 26rpx;
-	color: #333;
+	color: #FFFFFF;
+	font-weight: 600;
 	max-width: 140rpx;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 .location-arrow {
 	font-size: 20rpx;
-	color: #999;
+	color: rgba(255, 255, 255, 0.9);
 	margin-left: 8rpx;
 }
 
@@ -388,19 +403,27 @@ export default {
 	flex: 1;
 	display: flex;
 	align-items: center;
-	background: #f5f7fa;
-	padding: 16rpx 24rpx;
-	border-radius: 40rpx;
+	background: rgba(255, 255, 255, 0.95);
+	padding: 18rpx 28rpx;
+	border-radius: 48rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+	transition: all 0.3s ease;
+}
+
+.search-box:active {
+	background: #FFFFFF;
+	transform: scale(0.98);
 }
 
 .search-icon {
 	margin-right: 12rpx;
 	font-size: 28rpx;
+	filter: grayscale(0.3);
 }
 
 .search-placeholder {
-	color: #999;
-	font-size: 26rpx;
+	color: #8B95A5;
+	font-size: 28rpx;
 }
 
 /* 小区选择器弹窗 */
@@ -410,8 +433,10 @@ export default {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0,0,0,0.5);
+	background: rgba(44, 62, 80, 0.6);
+	backdrop-filter: blur(8rpx);
 	z-index: 200;
+	animation: fadeIn 0.3s ease;
 }
 
 .community-picker {
@@ -419,14 +444,15 @@ export default {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: #fff;
-	border-radius: 30rpx 30rpx 0 0;
+	background: #FFFFFF;
+	border-radius: 40rpx 40rpx 0 0;
 	z-index: 201;
 	transform: translateY(100%);
-	transition: transform 0.3s ease;
+	transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 	max-height: 70vh;
 	display: flex;
 	flex-direction: column;
+	box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.12);
 }
 
 .community-picker.show {
@@ -437,20 +463,38 @@ export default {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 30rpx;
-	border-bottom: 1rpx solid #eee;
+	padding: 36rpx 40rpx;
+	border-bottom: 1rpx solid #F2F6FC;
+	position: relative;
+}
+
+.picker-header::before {
+	content: '';
+	position: absolute;
+	top: 16rpx;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 80rpx;
+	height: 8rpx;
+	background: #E4E7ED;
+	border-radius: 4rpx;
 }
 
 .picker-title {
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #333;
+	font-size: 36rpx;
+	font-weight: 700;
+	color: #2C3E50;
 }
 
 .picker-close {
-	font-size: 48rpx;
-	color: #999;
+	font-size: 52rpx;
+	color: #8B95A5;
 	line-height: 1;
+	transition: color 0.3s ease;
+}
+
+.picker-close:active {
+	color: #5A6C7D;
 }
 
 .picker-search {
@@ -474,17 +518,30 @@ export default {
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
-	padding: 24rpx 30rpx;
-	border-bottom: 1rpx solid #f5f5f5;
+	padding: 28rpx 40rpx;
+	border-bottom: 1rpx solid #F7F9FC;
+	transition: all 0.3s ease;
+}
+
+.picker-item:active {
+	background: #F7F9FC;
 }
 
 .picker-item.active {
-	background: #e6f7ff;
+	background: linear-gradient(90deg, #FFF5F0, #FFFFFF);
+	border-left: 6rpx solid #FF6B35;
+	padding-left: 34rpx;
 }
 
 .picker-item text:first-child {
-	font-size: 30rpx;
-	color: #333;
+	font-size: 32rpx;
+	color: #2C3E50;
+	font-weight: 500;
+}
+
+.picker-item.active text:first-child {
+	color: #FF6B35;
+	font-weight: 600;
 }
 
 .picker-item-address {
@@ -502,134 +559,222 @@ export default {
 /* 三级联动选择tabs */
 .region-tabs {
 	display: flex;
-	padding: 20rpx 30rpx;
-	border-bottom: 1rpx solid #eee;
-	background: #fafafa;
+	padding: 24rpx 40rpx;
+	border-bottom: 1rpx solid #F2F6FC;
+	background: #FAFBFC;
 }
 
 .region-tab {
-	padding: 12rpx 24rpx;
-	margin-right: 20rpx;
-	font-size: 28rpx;
-	color: #666;
+	padding: 16rpx 28rpx;
+	margin-right: 24rpx;
+	font-size: 30rpx;
+	color: #8B95A5;
 	border-bottom: 4rpx solid transparent;
+	transition: all 0.3s ease;
+	font-weight: 500;
 }
 
 .region-tab.active {
-	color: #409eff;
-	border-bottom-color: #409eff;
+	color: #FF6B35;
+	border-bottom-color: #FF6B35;
+	font-weight: 700;
 }
 
 .filter-tabs {
 	display: flex;
-	background: #fff;
-	padding: 20rpx;
+	background: #FFFFFF;
+	padding: 24rpx 30rpx;
 	white-space: nowrap;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .filter-tabs .tab-item {
 	display: inline-block;
-	padding: 12rpx 32rpx;
-	margin-right: 20rpx;
-	background: #f5f7fa;
-	border-radius: 40rpx;
-	font-size: 28rpx;
-	color: #333;
+	padding: 16rpx 36rpx;
+	margin-right: 24rpx;
+	background: #F7F9FC;
+	border-radius: 48rpx;
+	font-size: 30rpx;
+	color: #5A6C7D;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	border: 2rpx solid transparent;
 }
 
 .filter-tabs .tab-item.active {
-	background: #409eff;
-	color: #fff;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	color: #FFFFFF;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+	transform: translateY(-2rpx);
 }
 
 .house-list {
 	height: calc(100vh - 300rpx);
+	padding: 20rpx 24rpx;
+	background: #F5F7FA;
 }
 
-.house-card {
+.house-grid {
 	display: flex;
-	background: #fff;
-	margin: 20rpx;
-	padding: 24rpx;
-	border-radius: 16rpx;
-}
-
-.house-img {
-	width: 200rpx;
-	height: 150rpx;
-	border-radius: 12rpx;
-	margin-right: 20rpx;
-}
-
-.house-info {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
+	flex-wrap: wrap;
 	justify-content: space-between;
 }
 
-.house-title {
-	font-size: 30rpx;
-	font-weight: 600;
-	color: #333;
+.house-card {
+	width: calc(50% - 12rpx);
+	background: #FFFFFF;
+	border-radius: 24rpx;
+	margin-bottom: 24rpx;
+	overflow: hidden;
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.house-card:active {
+	transform: scale(0.98);
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+}
+
+/* 图片容器 */
+.card-image-wrapper {
+	position: relative;
+	width: 100%;
+	height: 240rpx;
+	overflow: hidden;
+}
+
+.card-image {
+	width: 100%;
+	height: 100%;
+	transition: transform 0.5s ease;
+}
+
+.house-card:active .card-image {
+	transform: scale(1.05);
+}
+
+/* 价格标签 */
+.price-tag {
+	position: absolute;
+	bottom: 12rpx;
+	left: 12rpx;
+	background: linear-gradient(135deg, #FF6B35, #FF8C61);
+	padding: 8rpx 16rpx;
+	border-radius: 20rpx;
+	display: flex;
+	align-items: baseline;
+	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.4);
+}
+
+.price-tag .price-num {
+	font-size: 32rpx;
+	font-weight: 800;
+	color: #FFFFFF;
+	letter-spacing: -1rpx;
+}
+
+.price-tag .price-unit {
+	font-size: 20rpx;
+	color: rgba(255, 255, 255, 0.9);
+	margin-left: 4rpx;
+}
+
+/* 浏览数徽章 */
+.view-badge {
+	position: absolute;
+	top: 12rpx;
+	right: 12rpx;
+	background: rgba(0, 0, 0, 0.5);
+	padding: 6rpx 12rpx;
+	border-radius: 16rpx;
+	backdrop-filter: blur(4rpx);
+}
+
+.view-badge text {
+	font-size: 20rpx;
+	color: #FFFFFF;
+}
+
+/* 卡片内容 */
+.card-content {
+	padding: 20rpx;
+}
+
+.card-title {
+	font-size: 28rpx;
+	font-weight: 700;
+	color: #2C3E50;
+	line-height: 1.4;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-height: 78rpx;
+}
+
+.card-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8rpx;
+	margin: 12rpx 0;
+}
+
+.card-tag {
+	font-size: 20rpx;
+	color: #5A6C7D;
+	background: #F0F4F8;
+	padding: 6rpx 12rpx;
+	border-radius: 6rpx;
+	font-weight: 500;
+}
+
+.card-location {
+	display: flex;
+	align-items: center;
+	margin-top: 8rpx;
+}
+
+.card-location .location-icon {
+	font-size: 24rpx;
+	margin-right: 6rpx;
+}
+
+.card-location .location-text {
+	font-size: 22rpx;
+	color: #8B95A5;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.house-tags {
-	display: flex;
-	gap: 12rpx;
-	margin: 8rpx 0;
-}
-
-.tag {
-	font-size: 24rpx;
-	color: #666;
-	background: #f5f7fa;
-	padding: 4rpx 12rpx;
-	border-radius: 6rpx;
-}
-
-.house-location {
-	font-size: 24rpx;
-	color: #999;
-}
-
-.house-bottom {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.house-price {
-	color: #ff6b6b;
-}
-
-.price-num {
-	font-size: 36rpx;
-	font-weight: bold;
-}
-
-.price-unit {
-	font-size: 24rpx;
-}
-
-.house-stats {
-	display: flex;
-	align-items: center;
-}
-
-.stats-text {
-	font-size: 22rpx;
-	color: #999;
-}
-
+/* 加载状态 */
 .load-more, .no-more {
+	width: 100%;
 	text-align: center;
 	padding: 40rpx;
-	color: #999;
-	font-size: 28rpx;
+	color: #8B95A5;
+	font-size: 26rpx;
+}
+
+.load-more {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12rpx;
+}
+
+.loading-spinner {
+	width: 32rpx;
+	height: 32rpx;
+	border: 4rpx solid #E4E7ED;
+	border-top-color: #FF6B35;
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
 }
 
 .tabbar {
