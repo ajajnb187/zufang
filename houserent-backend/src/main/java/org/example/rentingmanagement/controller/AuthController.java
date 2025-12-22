@@ -36,13 +36,13 @@ public class AuthController {
     }
 
     /**
-     * 管理员注册
+     * 管理员注册（已禁用，请通过平台管理员后台新增小区管理员）
      */
-    @PostMapping("/admin-register")
-    public Result<String> adminRegister(@RequestBody @Valid LoginRequest request) {
-        String result = authService.adminRegister(request.getPhone(), request.getPassword(), request.getAdminType(), request.getCommunityId());
-        return Result.success("注册成功", result);
-    }
+    // @PostMapping("/admin-register")
+    // public Result<String> adminRegister(@RequestBody @Valid LoginRequest request) {
+    //     String result = authService.adminRegister(request.getPhone(), request.getPassword(), request.getAdminType(), request.getCommunityId());
+    //     return Result.success("注册成功", result);
+    // }
 
     /**
      * 微信小程序登录

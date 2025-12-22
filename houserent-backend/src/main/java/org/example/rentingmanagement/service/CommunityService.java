@@ -60,4 +60,19 @@ public interface CommunityService {
      * 检查用户是否可以管理小区配套设施
      */
     boolean canManageFacilities(Long userId, Long communityId);
+
+    /**
+     * 保存小区
+     */
+    boolean save(Community community);
+
+    /**
+     * 根据ID获取小区
+     */
+    Community getById(Long communityId);
+
+    /**
+     * 根据ID更新小区
+     */
+    boolean updateById(Community community);
 }

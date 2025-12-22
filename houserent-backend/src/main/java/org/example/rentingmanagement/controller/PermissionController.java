@@ -212,6 +212,7 @@ public class PermissionController {
 
     /**
      * 切换权限状态
+     * 同时更新admin表的状态，确保登录验证生效
      */
     @PostMapping("/{permissionId}/toggle-status")
     public Result<String> toggleStatus(@PathVariable Long permissionId) {
@@ -221,11 +222,51 @@ public class PermissionController {
         }
 
         String newStatus = "active".equals(permission.getStatus()) ? "inactive" : "active";
+        
+        // 1. 更新权限表状态
         permission.setStatus(newStatus);
         permission.setUpdatedAt(LocalDateTime.now());
         permissionMapper.updateById(permission);
+        
+        // 2. 同步更新admin表状态（登录验证检查的是admin表）
+        Admin admin = adminMapper.selectById(permission.getAdminId());
+        if (admin != null) {
+            admin.setStatus(newStatus);
+            admin.setUpdatedAt(LocalDateTime.now());
+            adminMapper.updateById(admin);
+            log.info("同步更新admin表状态: adminId={}, newStatus={}", admin.getAdminId(), newStatus);
+        }
 
         log.info("切换权限状态: permissionId={}, newStatus={}", permissionId, newStatus);
+        return Result.success("状态已切换为" + ("active".equals(newStatus) ? "启用" : "停用"));
+    }
+
+    /**
+     * 通过adminId切换管理员状态（用于没有权限记录的管理员）
+     */
+    @PostMapping("/admin/{adminId}/toggle-status")
+    public Result<String> toggleAdminStatus(@PathVariable Long adminId) {
+        Admin admin = adminMapper.selectById(adminId);
+        if (admin == null) {
+            return Result.error("管理员不存在");
+        }
+
+        String newStatus = "active".equals(admin.getStatus()) ? "inactive" : "active";
+        admin.setStatus(newStatus);
+        admin.setUpdatedAt(LocalDateTime.now());
+        adminMapper.updateById(admin);
+        
+        // 如果存在权限记录，也同步更新
+        LambdaQueryWrapper<AdminPermission> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AdminPermission::getAdminId, adminId);
+        AdminPermission permission = permissionMapper.selectOne(wrapper);
+        if (permission != null) {
+            permission.setStatus(newStatus);
+            permission.setUpdatedAt(LocalDateTime.now());
+            permissionMapper.updateById(permission);
+        }
+
+        log.info("切换管理员状态: adminId={}, newStatus={}", adminId, newStatus);
         return Result.success("状态已切换为" + ("active".equals(newStatus) ? "启用" : "停用"));
     }
 

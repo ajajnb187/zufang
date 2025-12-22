@@ -138,19 +138,30 @@ public class AdminController {
     public Result<Void> addCommunity(@RequestBody Map<String, Object> data) {
         try {
             log.info("添加小区: {}", data);
-            // 基础实现：记录操作日志
-            String name = (String) data.get("name");
-            String address = (String) data.get("address");
-
-            if (name == null || name.trim().isEmpty()) {
+            
+            String communityName = (String) data.get("communityName");
+            if (communityName == null || communityName.trim().isEmpty()) {
                 return Result.error(ResultCode.PARAM_ERROR, "小区名称不能为空");
             }
 
-            log.info("成功添加小区: name={}, address={}", name, address);
+            Community community = new Community();
+            community.setCommunityName(communityName);
+            community.setCity((String) data.get("city"));
+            community.setDistrict((String) data.get("district"));
+            community.setAddress((String) data.get("address"));
+            community.setPropertyCompany((String) data.get("propertyCompany"));
+            community.setPropertyPhone((String) data.get("propertyPhone"));
+            community.setDescription((String) data.get("description"));
+            community.setStatus((String) data.getOrDefault("status", "active"));
+            community.setCreatedAt(java.time.LocalDateTime.now());
+            
+            communityService.save(community);
+            
+            log.info("成功添加小区: communityId={}, name={}", community.getCommunityId(), communityName);
             return Result.success("小区添加成功");
         } catch (Exception e) {
             log.error("添加小区失败", e);
-            return Result.error(ResultCode.ERROR, "添加小区失败");
+            return Result.error(ResultCode.ERROR, "添加小区失败: " + e.getMessage());
         }
     }
 
@@ -162,18 +173,48 @@ public class AdminController {
                                         @RequestBody Map<String, Object> data) {
         try {
             log.info("更新小区{}: {}", communityId, data);
-            String name = (String) data.get("name");
-            String address = (String) data.get("address");
-
-            if (name != null && name.trim().isEmpty()) {
-                return Result.error(ResultCode.PARAM_ERROR, "小区名称不能为空");
+            
+            Community community = communityService.getById(communityId);
+            if (community == null) {
+                return Result.error(ResultCode.NOT_FOUND, "小区不存在");
             }
 
-            log.info("成功更新小区{}: name={}, address={}", communityId, name, address);
+            if (data.containsKey("communityName")) {
+                String name = (String) data.get("communityName");
+                if (name != null && !name.trim().isEmpty()) {
+                    community.setCommunityName(name);
+                }
+            }
+            if (data.containsKey("city")) {
+                community.setCity((String) data.get("city"));
+            }
+            if (data.containsKey("district")) {
+                community.setDistrict((String) data.get("district"));
+            }
+            if (data.containsKey("address")) {
+                community.setAddress((String) data.get("address"));
+            }
+            if (data.containsKey("propertyCompany")) {
+                community.setPropertyCompany((String) data.get("propertyCompany"));
+            }
+            if (data.containsKey("propertyPhone")) {
+                community.setPropertyPhone((String) data.get("propertyPhone"));
+            }
+            if (data.containsKey("description")) {
+                community.setDescription((String) data.get("description"));
+            }
+            if (data.containsKey("status")) {
+                community.setStatus((String) data.get("status"));
+            }
+            community.setUpdatedAt(java.time.LocalDateTime.now());
+            
+            communityService.updateById(community);
+
+            log.info("成功更新小区{}: name={}", communityId, community.getCommunityName());
             return Result.success("小区更新成功");
         } catch (Exception e) {
             log.error("更新小区失败: communityId={}", communityId, e);
-            return Result.error(ResultCode.ERROR, "更新小区失败");
+            return Result.error(ResultCode.ERROR, "更新小区失败: " + e.getMessage());
         }
     }
 
@@ -185,17 +226,21 @@ public class AdminController {
         try {
             log.info("删除小区: communityId={}", communityId);
 
-            // 检查小区是否存在
-            Community community = communityService.getCommunityDetail(communityId);
+            Community community = communityService.getById(communityId);
             if (community == null) {
                 return Result.error(ResultCode.NOT_FOUND, "小区不存在");
             }
+
+            // 软删除：将状态改为deleted
+            community.setStatus("deleted");
+            community.setUpdatedAt(java.time.LocalDateTime.now());
+            communityService.updateById(community);
 
             log.info("成功删除小区: communityId={}, name={}", communityId, community.getCommunityName());
             return Result.success("小区删除成功");
         } catch (Exception e) {
             log.error("删除小区失败: communityId={}", communityId, e);
-            return Result.error(ResultCode.ERROR, "删除小区失败");
+            return Result.error(ResultCode.ERROR, "删除小区失败: " + e.getMessage());
         }
     }
 
@@ -235,6 +280,135 @@ public class AdminController {
         } catch (Exception e) {
             log.error("分配小区失败: adminId={}, communityId={}", adminId, communityId, e);
             return Result.error(ResultCode.ERROR, "分配失败");
+        }
+    }
+
+    /**
+     * 平台管理员创建小区管理员
+     */
+    @PostMapping("/admins/create")
+    public Result<Map<String, Object>> createCommunityAdmin(@RequestBody Map<String, Object> body) {
+        try {
+            String phone = (String) body.get("phone");
+            String nickname = (String) body.get("nickname");
+            String password = (String) body.get("password");
+            Long communityId = body.get("communityId") != null ? Long.parseLong(body.get("communityId").toString()) : null;
+
+            if (phone == null || phone.isEmpty()) {
+                return Result.error(ResultCode.INVALID_PARAM, "手机号不能为空");
+            }
+            if (password == null || password.isEmpty()) {
+                return Result.error(ResultCode.INVALID_PARAM, "密码不能为空");
+            }
+
+            // 检查手机号是否已存在
+            User existUser = baseMapper.findByPhone(phone);
+            if (existUser != null) {
+                return Result.error(ResultCode.USER_EXISTS, "手机号已存在");
+            }
+
+            // 创建用户
+            User user = new User();
+            user.setOpenid("admin_" + phone);
+            user.setPhone(phone);
+            user.setPassword(org.example.rentingmanagement.utils.PasswordUtils.encode(password));
+            user.setNickname(nickname != null ? nickname : "管理员_" + phone);
+            user.setStatus("active");
+            user.setUserType(0); // 管理员
+            user.setCreditScore(java.math.BigDecimal.valueOf(5.0));
+            baseMapper.insert(user);
+
+            // 创建管理员记录
+            Admin admin = new Admin();
+            admin.setUserId(user.getUserId());
+            admin.setAdminType("community");
+            admin.setCommunityId(communityId);
+            admin.setStatus("active");
+            admin.setCreatedAt(java.time.LocalDateTime.now());
+            adminMapper.insert(admin);
+
+            log.info("平台管理员创建小区管理员成功: phone={}, adminId={}", phone, admin.getAdminId());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("adminId", admin.getAdminId());
+            result.put("userId", user.getUserId());
+            result.put("phone", phone);
+            result.put("nickname", user.getNickname());
+
+            return Result.success("创建成功", result);
+
+        } catch (Exception e) {
+            log.error("创建小区管理员失败", e);
+            return Result.error(ResultCode.ERROR, "创建失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新小区管理员信息
+     */
+    @PutMapping("/admins/{adminId}")
+    public Result<Void> updateCommunityAdmin(@PathVariable Long adminId,
+                                              @RequestBody Map<String, Object> body) {
+        try {
+            log.info("更新小区管理员信息: adminId={}", adminId);
+
+            Admin admin = adminMapper.selectById(adminId);
+            if (admin == null) {
+                return Result.error(ResultCode.NOT_FOUND, "管理员不存在");
+            }
+
+            // 更新用户昵称
+            if (body.containsKey("nickname")) {
+                User user = baseMapper.selectById(admin.getUserId());
+                if (user != null) {
+                    user.setNickname((String) body.get("nickname"));
+                    baseMapper.updateById(user);
+                }
+            }
+
+            log.info("管理员{}信息更新成功", adminId);
+            return Result.success("更新成功");
+
+        } catch (Exception e) {
+            log.error("更新管理员信息失败: adminId={}", adminId, e);
+            return Result.error(ResultCode.ERROR, "更新失败");
+        }
+    }
+
+    /**
+     * 删除小区管理员
+     */
+    @DeleteMapping("/admins/{adminId}")
+    public Result<Void> deleteCommunityAdmin(@PathVariable Long adminId) {
+        try {
+            log.info("删除小区管理员: adminId={}", adminId);
+
+            Admin admin = adminMapper.selectById(adminId);
+            if (admin == null) {
+                return Result.error(ResultCode.NOT_FOUND, "管理员不存在");
+            }
+
+            // 检查是否为小区管理员
+            if (!"community".equals(admin.getAdminType())) {
+                return Result.error(ResultCode.INVALID_PARAM, "只能删除小区管理员");
+            }
+
+            // 删除管理员记录
+            adminMapper.deleteById(adminId);
+
+            // 将对应用户的userType改回普通用户
+            User user = baseMapper.selectById(admin.getUserId());
+            if (user != null) {
+                user.setUserType(3); // 改为租客
+                baseMapper.updateById(user);
+            }
+
+            log.info("管理员{}删除成功", adminId);
+            return Result.success("删除成功");
+
+        } catch (Exception e) {
+            log.error("删除管理员失败: adminId={}", adminId, e);
+            return Result.error(ResultCode.ERROR, "删除失败");
         }
     }
 

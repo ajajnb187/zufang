@@ -123,11 +123,34 @@
             :disabled="!!currentEditAdmin"
           />
         </el-form-item>
+        <el-form-item v-if="!currentEditAdmin" label="密码" required>
+          <el-input 
+            v-model="editForm.password" 
+            type="password"
+            placeholder="请输入登录密码"
+            show-password
+          />
+        </el-form-item>
         <el-form-item label="昵称" required>
           <el-input 
             v-model="editForm.nickname" 
             placeholder="请输入昵称"
           />
+        </el-form-item>
+        <el-form-item v-if="!currentEditAdmin" label="分配小区">
+          <el-select 
+            v-model="editForm.communityId" 
+            placeholder="可选，也可稍后分配"
+            style="width: 100%"
+            clearable
+          >
+            <el-option
+              v-for="community in communityList"
+              :key="community.communityId"
+              :label="community.communityName"
+              :value="community.communityId"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
       
@@ -152,7 +175,10 @@ import { Plus } from '@element-plus/icons-vue'
 import { 
   getUnassignedCommunityAdmins, 
   assignCommunityToAdmin,
-  getCommunityList 
+  getCommunityList,
+  createCommunityAdmin,
+  updateCommunityAdmin,
+  deleteCommunityAdmin
 } from '@/api/platform'
 
 const loading = ref(false)
@@ -170,7 +196,9 @@ const editDialogVisible = ref(false)
 const currentEditAdmin = ref(null)
 const editForm = ref({
   phone: '',
-  nickname: ''
+  password: '',
+  nickname: '',
+  communityId: null
 })
 
 const formatDate = (dateString) => {
@@ -243,7 +271,9 @@ const submitAssign = async () => {
 const handleAdd = () => {
   editForm.value = {
     phone: '',
-    nickname: ''
+    password: '',
+    nickname: '',
+    communityId: null
   }
   currentEditAdmin.value = null
   editDialogVisible.value = true
@@ -259,17 +289,51 @@ const handleEdit = (row) => {
 }
 
 const submitEdit = async () => {
-  if (!editForm.value.phone || !editForm.value.nickname) {
-    ElMessage.warning('请填写完整信息')
+  if (!editForm.value.nickname) {
+    ElMessage.warning('请填写昵称')
     return
   }
   
   try {
     loading.value = true
-    // TODO: 调用后端接口保存数据
-    ElMessage.success(currentEditAdmin.value ? '编辑成功' : '新增成功')
-    editDialogVisible.value = false
-    loadData()
+    
+    if (currentEditAdmin.value) {
+      // 编辑现有管理员
+      const response = await updateCommunityAdmin(currentEditAdmin.value.adminId, {
+        nickname: editForm.value.nickname
+      })
+      if (response.code === 200) {
+        ElMessage.success('编辑成功')
+        editDialogVisible.value = false
+        loadData()
+      } else {
+        ElMessage.error(response.message || '编辑失败')
+      }
+    } else {
+      // 新增管理员
+      if (!editForm.value.phone) {
+        ElMessage.warning('请填写手机号')
+        return
+      }
+      if (!editForm.value.password) {
+        ElMessage.warning('请填写密码')
+        return
+      }
+      
+      const response = await createCommunityAdmin({
+        phone: editForm.value.phone,
+        password: editForm.value.password,
+        nickname: editForm.value.nickname,
+        communityId: editForm.value.communityId
+      })
+      if (response.code === 200) {
+        ElMessage.success('创建成功')
+        editDialogVisible.value = false
+        loadData()
+      } else {
+        ElMessage.error(response.message || '创建失败')
+      }
+    }
   } catch (error) {
     console.error('保存失败:', error)
     ElMessage.error('保存失败，请重试')
@@ -281,7 +345,7 @@ const submitEdit = async () => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm(
-      `确认要删除管理员 ${row.nickname}(${row.phone}) 吗？`,
+      `确认要删除管理员 ${row.nickname}(${row.phone}) 吗？删除后该用户将变为普通用户。`,
       '警告',
       {
         confirmButtonText: '确定',
@@ -291,9 +355,13 @@ const handleDelete = async (row) => {
     )
     
     loading.value = true
-    // TODO: 调用后端删除接口
-    ElMessage.success('删除成功')
-    loadData()
+    const response = await deleteCommunityAdmin(row.adminId)
+    if (response.code === 200) {
+      ElMessage.success('删除成功')
+      loadData()
+    } else {
+      ElMessage.error(response.message || '删除失败')
+    }
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除失败:', error)

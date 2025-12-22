@@ -51,20 +51,6 @@
             <el-tag type="info">{{ row.maxContractAudit }}/日</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="canManageFacilities" label="配套管理权限" width="120">
-          <template #default="{ row }">
-            <el-tag :type="row.canManageFacilities ? 'success' : 'danger'">
-              {{ row.canManageFacilities ? '允许' : '禁止' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="canHandleReports" label="举报处理权限" width="120">
-          <template #default="{ row }">
-            <el-tag :type="row.canHandleReports ? 'success' : 'danger'">
-              {{ row.canHandleReports ? '允许' : '禁止' }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'active' ? 'success' : 'warning'">
@@ -162,22 +148,6 @@
           <span class="unit-text">个/日</span>
         </el-form-item>
 
-        <el-form-item label="配套管理权限" prop="canManageFacilities">
-          <el-switch
-            v-model="formData.canManageFacilities"
-            active-text="允许"
-            inactive-text="禁止"
-          />
-        </el-form-item>
-
-        <el-form-item label="举报处理权限" prop="canHandleReports">
-          <el-switch
-            v-model="formData.canHandleReports"
-            active-text="允许"
-            inactive-text="禁止"
-          />
-        </el-form-item>
-
         <el-form-item label="备注" prop="remarks">
           <el-input
             v-model="formData.remarks"
@@ -210,6 +180,7 @@ import {
   updatePermissionConfig, 
   deletePermissionConfig,
   togglePermissionStatus,
+  toggleAdminStatus,
   getCommunityAdmins,
   getCommunityList
 } from '@/api/platform'
@@ -239,8 +210,6 @@ const formData = reactive({
   maxHouseAudit: 50,
   maxUserAudit: 30,
   maxContractAudit: 20,
-  canManageFacilities: true,
-  canHandleReports: true,
   remarks: ''
 })
 
@@ -322,8 +291,6 @@ const resetForm = () => {
     maxHouseAudit: 50,
     maxUserAudit: 30,
     maxContractAudit: 20,
-    canManageFacilities: true,
-    canHandleReports: true,
     remarks: ''
   })
   editingItem.value = null
@@ -335,14 +302,13 @@ const handleAdd = () => {
 }
 
 const handleEdit = (row) => {
+  // 允许编辑，即使没有权限记录也可以编辑默认值并保存
   editingItem.value = row
   Object.assign(formData, {
     adminId: row.adminId,
     maxHouseAudit: row.maxHouseAudit,
     maxUserAudit: row.maxUserAudit,
     maxContractAudit: row.maxContractAudit,
-    canManageFacilities: row.canManageFacilities,
-    canHandleReports: row.canHandleReports,
     remarks: row.remarks || ''
   })
   showAddDialog.value = true
@@ -361,13 +327,14 @@ const handleSave = async () => {
 
     saving.value = true
     
-    const apiCall = editingItem.value 
+    // 如果有permissionId则更新，否则创建新记录
+    const apiCall = editingItem.value?.id 
       ? updatePermissionConfig(editingItem.value.id, formData)
       : createPermissionConfig(formData)
     
     const response = await apiCall
     if (response.code === 200) {
-      ElMessage.success(editingItem.value ? '权限配置更新成功' : '权限配置创建成功')
+      ElMessage.success(editingItem.value?.id ? '权限配置更新成功' : '权限配置创建成功')
       showAddDialog.value = false
       loadData()
     } else {
@@ -383,9 +350,13 @@ const handleSave = async () => {
 
 const toggleStatus = async (row) => {
   try {
-    const response = await togglePermissionStatus(row.id)
+    // 根据是否有permissionId选择不同的API
+    const response = row.id 
+      ? await togglePermissionStatus(row.id)
+      : await toggleAdminStatus(row.adminId)
+    
     if (response.code === 200) {
-      ElMessage.success(`权限配置已${row.status === 'active' ? '停用' : '启用'}`)
+      ElMessage.success(`管理员已${row.status === 'active' ? '停用' : '启用'}`)
       loadData()
     } else {
       ElMessage.error(response.message || '状态切换失败')
@@ -397,6 +368,10 @@ const toggleStatus = async (row) => {
 }
 
 const handleDelete = async (row) => {
+  if (!row.id) {
+    ElMessage.warning('该管理员使用默认权限，无需删除')
+    return
+  }
   try {
     await ElMessageBox.confirm(`确定要删除管理员"${row.adminName}"的权限配置吗？`, '提示', {
       confirmButtonText: '确定',

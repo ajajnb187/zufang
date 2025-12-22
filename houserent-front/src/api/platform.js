@@ -238,9 +238,29 @@ export const deletePermissionConfig = (configId) => {
   return request.delete(`/api/admin/admin-permissions/${configId}`)
 }
 
-// 切换权限状态
+// 切换权限状态（通过permissionId）
 export const togglePermissionStatus = (configId) => {
   return request.post(`/api/admin/admin-permissions/${configId}/toggle-status`)
+}
+
+// 切换管理员状态（通过adminId，用于没有权限记录的管理员）
+export const toggleAdminStatus = (adminId) => {
+  return request.post(`/api/admin/admin-permissions/admin/${adminId}/toggle-status`)
+}
+
+// 创建小区管理员
+export const createCommunityAdmin = (data) => {
+  return request.post('/api/admin/admins/create', data)
+}
+
+// 更新小区管理员信息
+export const updateCommunityAdmin = (adminId, data) => {
+  return request.put(`/api/admin/admins/${adminId}`, data)
+}
+
+// 删除小区管理员
+export const deleteCommunityAdmin = (adminId) => {
+  return request.delete(`/api/admin/admins/${adminId}`)
 }
 
 // 获取小区管理员列表（用于权限配置）

@@ -265,4 +265,19 @@ public class CommunityServiceImpl extends ServiceImpl<CommunityMapper, Community
             return false;
         }
     }
+
+    @Override
+    public boolean save(Community community) {
+        return super.save(community);
+    }
+
+    @Override
+    public Community getById(Long communityId) {
+        return super.getById(communityId);
+    }
+
+    @Override
+    public boolean updateById(Community community) {
+        return super.updateById(community);
+    }
 }

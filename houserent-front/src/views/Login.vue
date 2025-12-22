@@ -59,7 +59,7 @@
             
             <div class="form-options">
               <el-checkbox v-model="rememberMe">记住我</el-checkbox>
-              <el-button link type="primary">忘记密码？</el-button>
+              <!-- <el-button link type="primary">忘记密码？</el-button> -->
             </div>
             
             <el-form-item>
@@ -74,16 +74,17 @@
               </el-button>
             </el-form-item>
             
-            <div class="register-link">
+            <!-- 注册功能已禁用，小区管理员由平台管理员创建 -->
+            <!-- <div class="register-link">
               还没有账号？ <el-link type="primary" @click="showRegisterDialog">立即注册</el-link>
-            </div>
+            </div> -->
           </el-form>
         </div>
       </div>
     </div>
     
-    <!-- 注册对话框 -->
-    <el-dialog
+    <!-- 注册对话框（已禁用，小区管理员由平台管理员创建） -->
+    <!-- <el-dialog
       v-model="registerDialogVisible"
       title="注册账号"
       width="440px"
@@ -150,7 +151,7 @@
           </el-button>
         </div>
       </template>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
