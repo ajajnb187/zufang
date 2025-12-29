@@ -1,55 +1,86 @@
 <template>
   <div class="admin-management-container">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>小区管理员管理</span>
-          <el-button type="primary" @click="handleAdd" :disabled="loading">
-            <el-icon><Plus /></el-icon>
-            新增管理员
-          </el-button>
-        </div>
-      </template>
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="header-content">
+        <h2 class="page-title">管理员档案</h2>
+        <p class="page-subtitle">管理小区管理员账号及权限分配</p>
+      </div>
+      <el-button type="primary" size="large" @click="handleAdd" :disabled="loading" class="add-btn">
+        <el-icon><Plus /></el-icon>
+        <span>新增管理员</span>
+      </el-button>
+    </div>
 
-      <!-- 数据表格 -->
-      <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="adminId" label="管理员ID" width="100" />
-        <el-table-column prop="phone" label="手机号" width="150" />
-        <el-table-column prop="nickname" label="昵称" width="120" />
-        <el-table-column prop="communityName" label="所属小区" width="200">
+    <!-- 数据表格卡片 -->
+    <el-card class="table-card" shadow="never">
+      <el-table 
+        :data="tableData" 
+        v-loading="loading" 
+        stripe 
+        class="modern-table"
+        :header-cell-style="{ background: '#f8f9fa', color: '#606266', fontWeight: '600' }"
+      >
+        <el-table-column prop="adminId" label="ID" width="80" align="center" />
+        <el-table-column prop="phone" label="手机号" width="140">
           <template #default="{ row }">
-            <el-tag v-if="row.communityId" type="success">{{ row.communityName }}</el-tag>
-            <el-tag v-else type="warning">未分配</el-tag>
+            <div class="phone-cell">
+              <el-icon class="phone-icon"><Phone /></el-icon>
+              <span>{{ row.phone }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="nickname" label="昵称" width="120">
+          <template #default="{ row }">
+            <div class="admin-name">
+              <el-icon class="user-icon"><User /></el-icon>
+              <span>{{ row.nickname }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="communityName" label="所属小区" min-width="180">
+          <template #default="{ row }">
+            <el-tag v-if="row.communityId" type="success" effect="light" round>
+              <el-icon><OfficeBuilding /></el-icon>
+              <span style="margin-left: 4px">{{ row.communityName }}</span>
+            </el-tag>
+            <el-tag v-else type="warning" effect="light" round>未分配</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="160">
           <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
+            <div class="time-cell">
+              <el-icon class="time-icon"><Clock /></el-icon>
+              <span>{{ formatDate(row.createdAt) }}</span>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="240" fixed="right" align="center">
           <template #default="{ row }">
             <el-button 
               type="primary" 
-              size="small" 
+              link
               @click="handleAssign(row)"
               :disabled="loading"
+              icon="Location"
             >
               {{ row.communityId ? '重新分配' : '分配小区' }}
             </el-button>
             <el-button 
               type="warning" 
-              size="small" 
+              link
               @click="handleEdit(row)"
               :disabled="loading"
+              icon="Edit"
             >
               编辑
             </el-button>
             <el-button 
               type="danger" 
-              size="small" 
+              link
               @click="handleDelete(row)"
               :disabled="loading"
+              icon="Delete"
             >
               删除
             </el-button>
@@ -171,7 +202,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Phone, User, OfficeBuilding, Clock } from '@element-plus/icons-vue'
 import { 
   getUnassignedCommunityAdmins, 
   assignCommunityToAdmin,
@@ -379,17 +410,98 @@ onMounted(() => {
 
 <style scoped>
 .admin-management-container {
-  padding: 20px;
+  padding: 24px;
+  background: #f5f7fa;
+  min-height: 100%;
 }
 
-.card-header {
+/* 页面标题 */
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 16px;
-  font-weight: 600;
+  margin-bottom: 24px;
 }
 
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #909399;
+}
+
+.add-btn {
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* 表格卡片 */
+.table-card {
+  border-radius: 12px;
+  border: none;
+}
+
+.table-card :deep(.el-card__body) {
+  padding: 0;
+}
+
+/* 现代化表格 */
+.modern-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modern-table :deep(.el-table__row) {
+  transition: all 0.3s;
+}
+
+.modern-table :deep(.el-table__row:hover) {
+  background-color: #f8f9fa !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.modern-table :deep(.el-table td) {
+  border-bottom: 1px solid #f0f2f5;
+}
+
+/* 单元格样式 */
+.phone-cell,
+.admin-name,
+.time-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-icon {
+  color: #67c23a;
+  font-size: 16px;
+}
+
+.user-icon {
+  color: #409eff;
+  font-size: 16px;
+}
+
+.time-icon {
+  color: #909399;
+  font-size: 14px;
+}
+
+/* 对话框 */
 .assign-content {
   padding: 10px 0;
 }

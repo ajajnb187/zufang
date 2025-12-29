@@ -556,7 +556,7 @@ public class AdminController {
             houseMap.put("images", imageList);
             houseMap.put("auditStatus", house.getAuditStatus());
             houseMap.put("auditOpinion", house.getAuditOpinion());
-            houseMap.put("createdAt", house.getCreatedAt());
+            houseMap.put("updatedAt", house.getUpdatedAt());
             houseMap.put("contactPhone", house.getContactPhone());
             
             // 获取房东信息

@@ -1,37 +1,43 @@
 // 全局配置
 
 // 获取当前环境的API地址
-// 真机调试时需要使用电脑的实际IP地址，localhost在真机上指向手机本身
 const getBaseURL = () => {
 	// #ifdef MP-WEIXIN
 	// 微信小程序环境
 	const systemInfo = uni.getSystemInfoSync()
-	// 如果是开发版本且在真机上运行，需要使用电脑IP
-	// 请将下面的IP地址改为你电脑的局域网IP
-	const DEV_IP = '172.31.14.194' // ⚠️ 改成你电脑的实际IP地址
+	const DEV_IP = '192.168.31.106' // 修改为你的电脑IP
 	
 	// 判断是否在真机上运行（非开发者工具）
 	if (systemInfo.platform !== 'devtools') {
 		return `http://${DEV_IP}:8888/api`
 	}
+	
+	// 开发者工具使用localhost
+	return 'http://localhost:8888/api'
 	// #endif
 	
-	// 开发者工具或其他环境使用localhost
+	// #ifndef MP-WEIXIN
+	// 非微信环境（H5等）
 	return 'http://localhost:8888/api'
+	// #endif
 }
 
 // WebSocket地址
 const getWsURL = () => {
 	// #ifdef MP-WEIXIN
 	const systemInfo = uni.getSystemInfoSync()
-	const DEV_IP = '172.31.14.194' // ⚠️ 与baseURL保持一致的IP地址
+	const DEV_IP = '192.168.31.106' // 与API地址保持一致
 	
 	if (systemInfo.platform !== 'devtools') {
 		return `ws://${DEV_IP}:8888`
 	}
-	// #endif
 	
 	return 'ws://localhost:8888'
+	// #endif
+	
+	// #ifndef MP-WEIXIN
+	return 'ws://localhost:8888'
+	// #endif
 }
 
 export default {

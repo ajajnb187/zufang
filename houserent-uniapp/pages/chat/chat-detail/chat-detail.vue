@@ -1,32 +1,73 @@
 <template>
-	<view class="chat-detail-page">
-		<!-- 聊天消息列表 -->
-		<scroll-view class="message-list" scroll-y :scroll-top="scrollTop" scroll-with-animation>
-			<view class="message-item" v-for="msg in messageList" :key="msg.messageId" 
-				:class="{ 'is-mine': msg.isMine }">
-				<image class="avatar" :src="msg.avatar || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'" mode="aspectFill"></image>
-				<view class="message-content">
-					<view class="message-info">
-						<text class="nickname">{{ msg.nickname }}</text>
-						<text class="time">{{ formatTime(msg.createTime) }}</text>
-					</view>
-					<view class="message-text">{{ msg.content }}</view>
+	<view class="chat-page">
+		<!-- 消息列表区域 -->
+		<scroll-view 
+			class="chat-scroll" 
+			scroll-y 
+			:scroll-into-view="scrollIntoView" 
+			:upper-threshold="50"
+			@scrolltoupper="onScrollToTop"
+		>
+			<view class="scroll-inner">
+				<!-- 加载更多 loading -->
+				<view class="history-loading" v-if="isLoadingHistory">
+					<view class="spinner"></view>
 				</view>
-			</view>
-			<view class="empty" v-if="messageList.length === 0">
-				<text class="empty-text">暂无聊天记录</text>
+
+				<!-- 消息循环 -->
+				<view 
+					class="message-row" 
+					v-for="(msg, index) in messageList" 
+					:key="msg.messageId" 
+					:id="'msg-' + msg.messageId"
+				>
+					<!-- 时间戳 -->
+					<view class="timestamp" v-if="shouldShowTime(index)">
+						<text>{{ formatTime(msg.createTime) }}</text>
+					</view>
+
+					<view class="message-body" :class="{ 'self': msg.isMine }">
+						<image class="avatar" :src="msg.avatar || defaultAvatar" mode="aspectFill"></image>
+						
+						<view class="content-wrapper">
+							<text class="nickname" v-if="!msg.isMine">{{ msg.nickname }}</text>
+							
+							<view class="bubble" :class="{ 'bubble-mine': msg.isMine, 'bubble-other': !msg.isMine }">
+								<text class="msg-text" user-select>{{ msg.content }}</text>
+								<!-- 发送状态 -->
+								<view class="state-icon" v-if="msg.pending">
+									<view class="spinner-small"></view>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+				
+				<!-- 底部垫高，防止被输入框遮挡 -->
+				<view class="bottom-spacer"></view>
+				<!-- 底部锚点 -->
+				<view id="scroll-bottom-anchor"></view>
 			</view>
 		</scroll-view>
-		
-		<!-- 输入框 -->
-		<view class="input-bar" v-if="!userMuted">
-			<input class="message-input" v-model="inputMessage" placeholder="请输入消息..." 
-				confirm-type="send" @confirm="sendMessage" />
-			<button class="send-btn" @click="sendMessage">发送</button>
-		</view>
-		<!-- 禁言状态提示 -->
-		<view class="muted-bar" v-else>
-			<text class="muted-text">🔇 您的账户已被禁言，暂时无法发送消息</text>
+
+		<!-- 底部输入框 -->
+		<view class="input-area">
+			<view class="input-wrapper" v-if="!userMuted">
+				<input 
+					class="chat-input" 
+					v-model="inputMessage" 
+					confirm-type="send" 
+					:cursor-spacing="20"
+					placeholder="" 
+					@confirm="sendMessage"
+				/>
+				<view class="send-btn" :class="{ 'active': inputMessage.trim().length > 0 }" @click="sendMessage">
+					发送
+				</view>
+			</view>
+			<view class="muted-bar" v-else>
+				<text>全员禁言中</text>
+			</view>
 		</view>
 	</view>
 </template>
@@ -38,432 +79,408 @@ import { canSendMessage, handleNotification, isMuted } from '@/utils/userStatus.
 export default {
 	data() {
 		return {
+			// 用户信息
 			userId: '',
 			userName: '',
-			userAvatar: '', // 对方头像
-			myAvatar: '', // 我的头像
+			userAvatar: '',
+			myAvatar: '',
+			defaultAvatar: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0',
+			
+			// 消息数据
 			messageList: [],
 			inputMessage: '',
-			scrollTop: 0,
+			
+			// 状态控制
+			scrollIntoView: '', // 控制滚动ID
+			isLoadingHistory: false, // 是否正在加载历史
+			isFirstLoad: true, // 是否是首次进入
+			userMuted: false,
 			websocket: null,
-			userMuted: false // 用户是否被禁言
+			
+			// 分页参数
+			pageNum: 1,
+			pageSize: 20,
+			hasMore: true
 		}
 	},
 	
 	onLoad(options) {
 		this.userId = options.userId
-		// 解码URL编码的昵称
-		this.userName = options.name ? decodeURIComponent(options.name) : '房东'
-		// 对方头像
+		this.userName = options.name ? decodeURIComponent(options.name) : '用户'
 		this.userAvatar = options.avatar ? decodeURIComponent(options.avatar) : ''
-		// 我的头像
+		
 		const userInfo = uni.getStorageSync('userInfo')
 		this.myAvatar = userInfo?.avatarUrl || ''
-		
-		// 检查用户是否被禁言
 		this.userMuted = isMuted()
 		
 		uni.setNavigationBarTitle({ title: this.userName })
+		
+		// 初始化加载
 		this.loadHistory()
 		this.connectWebSocket()
 	},
 	
 	onUnload() {
-		this.closeWebSocket()
+		if (this.websocket) {
+			this.websocket.close()
+		}
 	},
 	
 	methods: {
+		// 触顶加载更多
+		onScrollToTop() {
+			if (this.hasMore && !this.isLoadingHistory) {
+				this.pageNum++
+				this.loadHistory()
+			}
+		},
+
 		async loadHistory() {
+			if (this.isLoadingHistory) return
+			this.isLoadingHistory = true
+			
 			try {
-				console.log('加载聊天记录, otherUserId:', this.userId)
 				const res = await api.chat.getHistory({
 					otherUserId: this.userId,
-					pageNum: 1,
-					pageSize: 50
+					pageNum: this.pageNum,
+					pageSize: this.pageSize
 				})
-				console.log('聊天记录响应:', res)
+				
 				if (res.code === 200) {
 					const records = res.data?.records || res.data || []
-					console.log('聊天记录数据:', records)
-					
-					// 获取当前用户ID
 					const userInfo = uni.getStorageSync('userInfo')
 					const currentUserId = userInfo?.userId || userInfo?.id
 					
-					this.messageList = records.map(item => {
-						const isMine = item.senderId == currentUserId
-						return {
-							messageId: item.messageId,
-							// 优先使用过滤后的内容（敏感词已被替换为***），如果没有则使用原始内容
-							content: item.filteredContent || item.content,
-							isMine: isMine,
-							// 自己的消息用自己的头像，对方的消息用对方的头像
-							avatar: isMine ? this.myAvatar : (item.senderAvatar || this.userAvatar),
-							nickname: isMine ? '我' : (item.senderNickname || this.userName),
-							createTime: item.createdAt || item.createTime
+					// 格式化消息
+					const formattedRecords = records.map(item => ({
+						messageId: item.messageId, 
+						content: item.filteredContent || item.content,
+						isMine: item.senderId == currentUserId,
+						avatar: (item.senderId == currentUserId) ? this.myAvatar : (item.senderAvatar || this.userAvatar),
+						nickname: (item.senderId == currentUserId) ? '我' : (item.senderNickname || this.userName),
+						createTime: item.createdAt || item.createTime
+					})).reverse() // 假设接口返回的是按时间倒序(最新在前)，我们需要正序显示
+					
+					// 如果没有更多数据了
+					if (records.length < this.pageSize) {
+						this.hasMore = false
+					}
+
+					if (this.isFirstLoad) {
+						// 1. 首次加载：直接赋值，并滚动到底部
+						this.messageList = formattedRecords
+						this.scrollToBottom()
+						this.isFirstLoad = false
+					} else {
+						// 2. 加载历史：拼接到头部，【不】滚动到底部
+						// 记录当前最顶部的消息ID，用于维持视图位置（进阶做法，这里先保持不乱跳）
+						const firstMsgId = this.messageList[0]?.messageId
+						this.messageList = [...formattedRecords, ...this.messageList]
+						
+						// 这里设置 scrollIntoView 到刚才的第一条消息，可以防止页面跳动太厉害
+						if (firstMsgId) {
+							this.$nextTick(() => {
+								this.scrollIntoView = 'msg-' + firstMsgId
+							})
 						}
-					})
-					this.scrollToBottom()
-					if (this.messageList.length > 0) {
-						this.markAsRead()
 					}
 				}
 			} catch (e) {
-				console.error('加载聊天记录失败:', e)
+				console.error(e)
+			} finally {
+				this.isLoadingHistory = false
 			}
 		},
 		
 		connectWebSocket() {
 			const userInfo = uni.getStorageSync('userInfo')
-			const currentUserId = userInfo?.userId || userInfo?.id
-			if (!currentUserId) {
-				console.error('未获取到当前用户ID，无法连接WebSocket')
-				return
-			}
-			const wsUrl = `${api.wsUrl}/websocket/chat/${currentUserId}`
+			if (!userInfo) return
+			const id = userInfo.userId || userInfo.id
 			
 			this.websocket = uni.connectSocket({
-				url: wsUrl,
-				success: () => {
-					console.log('WebSocket连接成功')
-				},
-				fail: (err) => {
-					console.error('WebSocket连接失败:', err)
-				}
-			})
-			
-			this.websocket.onOpen(() => {
-				console.log('WebSocket已打开')
+				url: `${api.wsUrl}/websocket/chat/${id}`,
+				success: () => console.log('WS Connected')
 			})
 			
 			this.websocket.onMessage((res) => {
-				try {
-					const msg = JSON.parse(res.data)
-					console.log('收到WebSocket消息:', msg)
-					
-					// 处理系统通知（警告、禁言、封禁等）
-					if (msg.type === 'notification') {
-						handleNotification(msg)
-						return
-					}
-					
-					// 收到对方消息
-					if (msg.type === 'message' && msg.senderId == this.userId) {
-						this.messageList.push({
-							messageId: msg.messageId || Date.now(),
-							// WebSocket已经发送过滤后的内容，直接使用
-							content: msg.content,
-							isMine: false,
-							avatar: msg.senderAvatar || this.userAvatar,
-							nickname: msg.senderNickname || this.userName,
-							createTime: msg.createdAt || msg.createTime || new Date()
-						})
-						this.scrollToBottom()
-						this.markAsRead()
-					}
-					
-					// 自己发送的消息确认（服务器返回的是过滤后的内容）
-					if (msg.type === 'sent') {
-						console.log('收到发送确认，过滤后内容:', msg.content)
-						// 找到待确认的消息并更新为服务器返回的过滤后内容
-						const pendingIndex = this.messageList.findIndex(m => m.pending && m.isMine)
-						if (pendingIndex !== -1) {
-							// 使用Vue响应式方式更新数组元素
-							this.$set(this.messageList, pendingIndex, {
-								...this.messageList[pendingIndex],
-								messageId: msg.messageId,
-								content: msg.content, // 使用服务器返回的过滤后内容
-								pending: false
-							})
-							console.log('消息已更新为过滤后内容')
-						}
-					}
-				} catch (e) {
-					console.error('解析消息失败:', e)
+				const msg = JSON.parse(res.data)
+				if (msg.type === 'message' && msg.senderId == this.userId) {
+					this.pushMessage({
+						messageId: msg.messageId || Date.now(),
+						content: msg.content,
+						isMine: false,
+						avatar: msg.senderAvatar || this.userAvatar,
+						createTime: new Date()
+					})
 				}
 			})
-			
-			this.websocket.onError((err) => {
-				console.error('WebSocket错误:', err)
-			})
-			
-			this.websocket.onClose(() => {
-				console.log('WebSocket已关闭')
-			})
 		},
 		
-		closeWebSocket() {
-			if (this.websocket) {
-				this.websocket.close()
-				this.websocket = null
-			}
+		// 接收/发送新消息时调用
+		pushMessage(msg) {
+			this.messageList.push(msg)
+			this.scrollToBottom() // 只有新消息才滚到底部
 		},
-		
-		async sendMessage() {
-			const content = this.inputMessage.trim()
-			if (!content) {
-				uni.showToast({ title: '请输入消息内容', icon: 'none' })
-				return
-			}
+
+		sendMessage() {
+			const text = this.inputMessage.trim()
+			if (!text) return
 			
-			// 检查用户是否可以发送消息（禁言/封禁检查）
-			const canSend = await canSendMessage()
-			if (!canSend) {
-				return
-			}
-			
-			const message = {
-				type: 'chat',
-				receiverId: parseInt(this.userId),
-				content: content
-			}
-			
+			const tempId = Date.now()
+			this.pushMessage({
+				messageId: tempId,
+				content: text,
+				isMine: true,
+				avatar: this.myAvatar,
+				createTime: new Date(),
+				pending: true
+			})
+			this.inputMessage = ''
+
 			if (this.websocket) {
-				// 生成临时ID用于后续匹配更新
-				const tempId = Date.now()
 				this.websocket.send({
-					data: JSON.stringify(message),
+					data: JSON.stringify({
+						type: 'chat',
+						receiverId: this.userId,
+						content: text
+					}),
 					success: () => {
-						// 先显示"发送中..."的占位消息
-						this.messageList.push({
-							messageId: tempId,
-							content: '发送中...',
-							originalContent: content, // 保存原始内容用于发送失败时显示
-							isMine: true,
-							avatar: this.myAvatar,
-							nickname: '我',
-							createTime: new Date(),
-							pending: true // 标记为待确认状态
-						})
-						this.inputMessage = ''
-						this.scrollToBottom()
-					},
-					fail: (err) => {
-						console.error('发送消息失败:', err)
-						uni.showToast({ title: '发送失败', icon: 'none' })
+						const target = this.messageList.find(m => m.messageId === tempId)
+						if (target) target.pending = false
 					}
 				})
-			} else {
-				uni.showToast({ title: '连接已断开，请重新进入', icon: 'none' })
-			}
-		},
-		
-		async markAsRead() {
-			try {
-				await api.chat.markRead(this.userId)
-			} catch (e) {
-				console.error('标记已读失败:', e)
 			}
 		},
 		
 		scrollToBottom() {
 			this.$nextTick(() => {
-				this.scrollTop = 999999
+				// 先清空，确保下次赋值能触发变更
+				this.scrollIntoView = ''
+				setTimeout(() => {
+					this.scrollIntoView = 'scroll-bottom-anchor'
+				}, 100)
 			})
 		},
 		
+		shouldShowTime(index) {
+			if (index === 0) return true
+			const prev = new Date(this.messageList[index - 1].createTime).getTime()
+			const curr = new Date(this.messageList[index].createTime).getTime()
+			return (curr - prev) > 5 * 60 * 1000
+		},
+
 		formatTime(time) {
 			if (!time) return ''
 			const date = new Date(time)
-			const now = new Date()
-			const diff = now - date
-			
-			if (diff < 60000) return '刚刚'
-			if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-			if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-			
-			const month = date.getMonth() + 1
-			const day = date.getDate()
-			const hour = date.getHours().toString().padStart(2, '0')
-			const minute = date.getMinutes().toString().padStart(2, '0')
-			return `${month}-${day} ${hour}:${minute}`
+			const h = date.getHours().toString().padStart(2, '0')
+			const m = date.getMinutes().toString().padStart(2, '0')
+			return `${h}:${m}`
 		}
 	}
 }
 </script>
 
 <style scoped>
-.chat-detail-page {
-	height: 100vh;
+/* 页面容器 */
+.chat-page {
 	display: flex;
 	flex-direction: column;
-	background: linear-gradient(180deg, #F7F9FC 0%, #FFFFFF 100%);
+	height: 100vh;
+	background-color: #EDEDED;
 }
 
-.message-list {
+/* 消息滚动区 */
+.chat-scroll {
 	flex: 1;
-	padding: 24rpx 30rpx;
+	height: 0; /* 关键：强制占据剩余空间 */
+	width: 100%;
 }
 
-.message-item {
+.scroll-inner {
+	padding: 20rpx 24rpx 0;
+}
+
+/* 底部垫高，必须大于输入框高度 */
+.bottom-spacer {
+	height: 130rpx; 
+	width: 100%;
+}
+
+/* 加载更多 Loading */
+.history-loading {
 	display: flex;
-	margin-bottom: 32rpx;
-	animation: slideIn 0.3s ease;
+	justify-content: center;
+	padding: 20rpx 0;
+}
+.spinner {
+	width: 30rpx;
+	height: 30rpx;
+	border: 4rpx solid #ccc;
+	border-top-color: #999;
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
 }
 
-@keyframes slideIn {
-	from { opacity: 0; transform: translateY(20rpx); }
-	to { opacity: 1; transform: translateY(0); }
+/* 消息行 */
+.message-row {
+	margin-bottom: 30rpx;
+	width: 100%;
 }
 
-.message-item.is-mine {
+.timestamp {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 20rpx;
+}
+.timestamp text {
+	font-size: 24rpx;
+	color: #999;
+	background-color: rgba(0,0,0,0.05);
+	padding: 4rpx 10rpx;
+	border-radius: 6rpx;
+}
+
+.message-body {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+}
+
+.message-body.self {
 	flex-direction: row-reverse;
 }
 
 .avatar {
-	width: 88rpx;
-	height: 88rpx;
-	border-radius: 50%;
+	width: 80rpx;
+	height: 80rpx;
+	border-radius: 10rpx;
+	background: #fff;
+	flex-shrink: 0;
+}
+
+.content-wrapper {
+	max-width: 70%;
 	margin: 0 20rpx;
-	border: 4rpx solid #FFE5D9;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-}
-
-.message-content {
-	max-width: 520rpx;
-}
-
-.message-info {
 	display: flex;
-	align-items: center;
-	margin-bottom: 12rpx;
+	flex-direction: column;
 }
 
-.is-mine .message-info {
-	flex-direction: row-reverse;
+.message-body.self .content-wrapper {
+	align-items: flex-end;
 }
 
 .nickname {
-	font-size: 24rpx;
-	color: #8B95A5;
-	margin-right: 12rpx;
-	font-weight: 500;
-}
-
-.is-mine .nickname {
-	margin-right: 0;
-	margin-left: 12rpx;
-}
-
-.time {
 	font-size: 22rpx;
-	color: #BDC3C7;
+	color: #999;
+	margin-bottom: 6rpx;
 }
 
-.message-text {
-	background: #FFFFFF;
-	padding: 24rpx 28rpx;
-	border-radius: 20rpx;
-	font-size: 30rpx;
-	line-height: 1.6;
-	word-wrap: break-word;
-	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+/* 气泡 - 微信风格 */
+.bubble {
+	padding: 18rpx 24rpx;
+	border-radius: 10rpx;
+	font-size: 32rpx;
+	line-height: 1.5;
 	position: relative;
+	word-break: break-all;
+	display: flex;
+	align-items: center;
 }
 
-.message-text::before {
+.bubble-other {
+	background-color: #FFFFFF;
+	color: #000;
+	border: 1rpx solid #E5E5E5;
+}
+.bubble-other::before {
 	content: '';
 	position: absolute;
-	top: 12rpx;
-	left: -12rpx;
-	width: 0;
-	height: 0;
-	border-top: 12rpx solid transparent;
-	border-bottom: 12rpx solid transparent;
+	top: 24rpx;
+	left: -11rpx;
+	border-top: 10rpx solid transparent;
+	border-bottom: 10rpx solid transparent;
 	border-right: 12rpx solid #FFFFFF;
 }
 
-.is-mine .message-text {
-	background: linear-gradient(135deg, #FF6B35, #FF8C61);
-	color: #FFFFFF;
-	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+.bubble-mine {
+	background-color: #95EC69;
+	color: #000;
+}
+.bubble-mine::after {
+	content: '';
+	position: absolute;
+	top: 24rpx;
+	right: -11rpx;
+	border-top: 10rpx solid transparent;
+	border-bottom: 10rpx solid transparent;
+	border-left: 12rpx solid #95EC69;
 }
 
-.is-mine .message-text::before {
-	left: auto;
-	right: -12rpx;
-	border-right: none;
-	border-left: 12rpx solid #FF8C61;
+/* 发送中 Loading */
+.state-icon {
+	margin-right: 12rpx;
+}
+.spinner-small {
+	width: 24rpx;
+	height: 24rpx;
+	border: 3rpx solid rgba(0,0,0,0.1);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
 }
 
-.empty {
-	text-align: center;
-	padding: 150rpx 40rpx;
-	animation: fadeIn 0.5s ease;
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* 底部输入区 - 固定定位 */
+.input-area {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: #F7F7F7;
+	border-top: 1rpx solid #DCDCDC;
+	padding: 16rpx 20rpx;
+	padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+	z-index: 100;
 }
 
-@keyframes fadeIn {
-	from { opacity: 0; }
-	to { opacity: 1; }
-}
-
-.empty-text {
-	font-size: 28rpx;
-	color: #8B95A5;
-	font-weight: 500;
-}
-
-.input-bar {
+.input-wrapper {
 	display: flex;
 	align-items: center;
-	padding: 24rpx 30rpx;
-	background: #FFFFFF;
-	border-top: 1rpx solid #F2F6FC;
-	padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.04);
+	height: 72rpx;
 }
 
-.message-input {
+.chat-input {
 	flex: 1;
-	background: #F7F9FC;
-	padding: 24rpx 28rpx;
-	border-radius: 48rpx;
+	background: #fff;
+	height: 72rpx;
+	border-radius: 10rpx;
+	padding: 0 20rpx;
 	font-size: 30rpx;
 	margin-right: 20rpx;
-	color: #2C3E50;
-	border: 2rpx solid #E4E7ED;
-	transition: all 0.3s ease;
-}
-
-.message-input:focus {
-	background: #FFFFFF;
-	border-color: #FF6B35;
-	box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
 }
 
 .send-btn {
-	background: linear-gradient(135deg, #FF6B35, #FF8C61);
-	color: #FFFFFF;
-	padding: 24rpx 44rpx;
-	border-radius: 48rpx;
+	background-color: #EDEDED;
+	color: #999; /* 默认灰色 */
+	padding: 0 24rpx;
+	height: 64rpx;
+	line-height: 64rpx;
+	border-radius: 8rpx;
 	font-size: 28rpx;
-	font-weight: 700;
-	border: none;
-	box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
-	transition: all 0.3s ease;
+	font-weight: 500;
+	transition: background-color 0.2s;
 }
 
-.send-btn:active {
-	transform: scale(0.95);
-	box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.3);
+.send-btn.active {
+	background-color: #07C160; /* 微信绿 */
+	color: #fff;
 }
 
 .muted-bar {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 32rpx 30rpx;
-	background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
-	border-top: 2rpx solid #FFB74D;
-	padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
-	box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.04);
-}
-
-.muted-text {
-	font-size: 28rpx;
-	color: #E65100;
-	font-weight: 600;
 	text-align: center;
-	line-height: 1.6;
+	color: #999;
+	font-size: 28rpx;
+	padding: 20rpx 0;
 }
 </style>

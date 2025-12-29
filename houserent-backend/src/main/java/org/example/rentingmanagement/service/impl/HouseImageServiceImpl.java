@@ -52,13 +52,13 @@ public class HouseImageServiceImpl implements HouseImageService {
             MultipartFile file = files.get(i);
             
             try {
-                // 上传文件到MinIO
-                String imageUrl = minioService.uploadFile(file, "houses");
+                // 上传文件到MinIO，返回相对路径
+                String relativePath = minioService.uploadFile(file, "houses");
                 
-                // 创建图片记录
+                // 创建图片记录，保存相对路径
                 HouseImage houseImage = new HouseImage();
                 houseImage.setHouseId(houseId);
-                houseImage.setImageUrl(imageUrl);
+                houseImage.setImageUrl(relativePath);
                 houseImage.setImageName(file.getOriginalFilename());
                 houseImage.setImageSize(file.getSize());
                 houseImage.setImageType(file.getContentType());
@@ -70,7 +70,7 @@ public class HouseImageServiceImpl implements HouseImageService {
                 houseImageMapper.insert(houseImage);
                 uploadedImages.add(houseImage);
                 
-                log.info("House image uploaded successfully: houseId={}, imageUrl={}", houseId, imageUrl);
+                log.info("House image uploaded successfully: houseId={}, relativePath={}", houseId, relativePath);
                 
             } catch (Exception e) {
                 log.error("Failed to upload house image: houseId={}, fileName={}", houseId, file.getOriginalFilename(), e);

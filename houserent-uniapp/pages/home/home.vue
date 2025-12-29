@@ -285,15 +285,20 @@ export default {
 									imageList = JSON.parse(house.images)
 								} catch (e) {
 									// 如果不是JSON，直接作为URL使用
-									if (house.images.startsWith('http')) {
-										imageList = [house.images]
-									}
+									imageList = [house.images]
 								}
 							} else if (Array.isArray(house.images)) {
 								imageList = house.images
 							}
 						}
-						house.coverImage = imageList.length > 0 ? imageList[0] : '/static/logo.png'
+						// 处理图片URL - 如果是相对路径代理URL，添加baseUrl
+						let coverUrl = imageList.length > 0 ? imageList[0] : '/static/logo.png'
+						if (coverUrl && coverUrl.startsWith('/api/img/')) {
+							// 代理URL需要添加完整的baseUrl（去掉/api后缀）
+							const baseUrl = api.baseUrl.replace('/api', '')
+							coverUrl = baseUrl + coverUrl
+						}
+						house.coverImage = coverUrl
 						console.log('【首页】处理后封面图:', house.houseId, house.coverImage)
 					})
 					this.houseList = this.pageNum === 1 ? records : [...this.houseList, ...records]

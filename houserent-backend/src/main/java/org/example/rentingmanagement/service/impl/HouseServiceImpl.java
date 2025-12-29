@@ -28,6 +28,7 @@ import org.example.rentingmanagement.mapper.ReportMapper;
 import org.example.rentingmanagement.mapper.UserMapper;
 import org.example.rentingmanagement.service.HouseService;
 import org.example.rentingmanagement.service.HouseImageService;
+import org.example.rentingmanagement.util.ImageUrlUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,7 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
     private final ReportMapper reportMapper;
     private final CommunityVerificationMapper communityVerificationMapper;
     private final HouseImageService houseImageService;
+    private final ImageUrlUtil imageUrlUtil;
     private final UserMapper userMapper;
     private final CommunityMapper communityMapper;
 
@@ -321,7 +323,7 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                         .collect(Collectors.toList()));
             }
 
-            // 为每个房源加载封面图片
+            // 为每个房源加载封面图片（转换URL为Base64）
             for (House house : result.getRecords()) {
                 List<HouseImage> images = houseImageService.getImagesByHouseId(house.getHouseId());
                 if (!images.isEmpty()) {
@@ -330,7 +332,7 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                             .filter(img -> img.getIsCover() != null && img.getIsCover())
                             .findFirst()
                             .orElse(images.get(0));
-                    house.setImages(JSON.toJSONString(List.of(coverImage.getImageUrl())));
+                    house.setImages(JSON.toJSONString(List.of(imageUrlUtil.toBase64DataUrl(coverImage.getImageUrl()))));
                 } else {
                     house.setImages(JSON.toJSONString(List.of()));
                 }
@@ -367,9 +369,12 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                 }
             }
 
-            // 加载房源图片
+            // 加载房源图片（转换URL为Base64）
             List<HouseImage> images = houseImageService.getImagesByHouseId(houseId);
-            house.setImages(JSON.toJSONString(images.stream().map(HouseImage::getImageUrl).collect(Collectors.toList())));
+            List<String> imageUrls = images.stream()
+                    .map(img -> imageUrlUtil.toBase64DataUrl(img.getImageUrl()))
+                    .collect(Collectors.toList());
+            house.setImages(JSON.toJSONString(imageUrls));
 
             // 构建返回VO
             HouseDetailVO vo = HouseDetailVO.fromHouse(house);
@@ -380,7 +385,8 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                 HouseDetailVO.LandlordInfo landlordInfo = new HouseDetailVO.LandlordInfo();
                 landlordInfo.setUserId(landlord.getUserId());
                 landlordInfo.setNickname(landlord.getNickname());
-                landlordInfo.setAvatarUrl(landlord.getAvatarUrl());
+                // 转换头像URL为Base64
+                landlordInfo.setAvatarUrl(imageUrlUtil.toBase64DataUrl(landlord.getAvatarUrl()));
                 landlordInfo.setPhone(landlord.getPhone());
                 landlordInfo.setCreditScore(landlord.getCreditScore());
                 vo.setLandlord(landlordInfo);
@@ -520,7 +526,7 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
             wrapper.orderByDesc(House::getCreatedAt);
             IPage<House> result = this.page(page, wrapper);
             
-            // 为每个房源加载封面图片
+            // 为每个房源加载封面图片（转换URL为Base64）
             for (House house : result.getRecords()) {
                 List<HouseImage> images = houseImageService.getImagesByHouseId(house.getHouseId());
                 if (!images.isEmpty()) {
@@ -529,7 +535,12 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                             .filter(img -> img.getIsCover() != null && img.getIsCover())
                             .findFirst()
                             .orElse(images.get(0));
-                    house.setImages(JSON.toJSONString(List.of(coverImage.getImageUrl())));
+                    String base64Url = imageUrlUtil.toBase64DataUrl(coverImage.getImageUrl());
+                    if (base64Url != null) {
+                        house.setImages(JSON.toJSONString(List.of(base64Url)));
+                    } else {
+                        house.setImages(JSON.toJSONString(List.of()));
+                    }
                 } else {
                     house.setImages(JSON.toJSONString(List.of()));
                 }
@@ -589,7 +600,7 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
             LambdaQueryWrapper<House> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(House::getAuditStatus, "pending")
                    .eq(communityId != null, House::getCommunityId, communityId)
-                   .orderByAsc(House::getCreatedAt);
+                   .orderByAsc(House::getUpdatedAt);
             return this.page(page, wrapper);
         } catch (Exception e) {
             log.error("获取待审核房源列表失败: {}", e.getMessage(), e);
@@ -733,4 +744,5 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
             return defaultStats;
         }
     }
+    
 }

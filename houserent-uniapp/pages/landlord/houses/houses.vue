@@ -183,6 +183,7 @@ export default {
 				
 				if (res.code === 200) {
 					const records = res.data.records || []
+					const baseUrl = api.baseUrl.replace('/api', '')
 					// 处理每个房源的图片
 					records.forEach(house => {
 						let imageList = []
@@ -191,15 +192,18 @@ export default {
 								try {
 									imageList = JSON.parse(house.images)
 								} catch (e) {
-									if (house.images.startsWith('http')) {
-										imageList = [house.images]
-									}
+									imageList = [house.images]
 								}
 							} else if (Array.isArray(house.images)) {
 								imageList = house.images
 							}
 						}
-						house.coverImage = imageList.length > 0 ? imageList[0] : '/static/logo.png'
+						// 处理代理URL
+						let coverUrl = imageList.length > 0 ? imageList[0] : '/static/logo.png'
+						if (coverUrl && coverUrl.startsWith('/api/img/')) {
+							coverUrl = baseUrl + coverUrl
+						}
+						house.coverImage = coverUrl
 					})
 					this.houseList = this.pageNum === 1 ? records : [...this.houseList, ...records]
 					this.noMore = records.length < this.pageSize

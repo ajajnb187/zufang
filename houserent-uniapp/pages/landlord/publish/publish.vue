@@ -371,8 +371,10 @@ export default {
 		async loadCommunityList() {
 			try {
 				const res = await api.community.getList()
+				console.log('小区列表响应:', res)
 				if (res.code === 200) {
-					this.communityList = res.data || []
+					// 后端返回的是分页对象，需要取records数组
+					this.communityList = res.data?.records || res.data || []
 				}
 			} catch (e) {
 				console.error('加载小区列表失败:', e)

@@ -51,4 +51,12 @@ public interface MinioService {
      * @return 是否存在
      */
     boolean fileExists(String objectName);
+
+    /**
+     * 获取文件字节数组
+     * @param bucketName bucket名称
+     * @param objectName 对象名称
+     * @return 文件字节数组
+     */
+    byte[] getFileBytes(String bucketName, String objectName);
 }

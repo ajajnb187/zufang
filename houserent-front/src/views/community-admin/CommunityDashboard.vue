@@ -70,9 +70,8 @@
               </div>
             </el-tooltip>
             
-            <el-dropdown @command="handleCommand" trigger="click">
+            <el-dropdown trigger="click">
               <div class="user-profile">
-                <el-avatar :size="36" :src="authStore.user?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" class="avatar" />
                 <div class="user-info">
                   <span class="name">{{ authStore.user?.nickname || '小区管理员' }}</span>
                   <span class="role">{{ authStore.user?.communityName || '小区管理员' }}</span>
@@ -81,10 +80,10 @@
               </div>
               <template #dropdown>
                 <el-dropdown-menu class="user-dropdown">
-                  <el-dropdown-item command="profile">
+                  <el-dropdown-item @click="handleOpenProfile">
                     <el-icon><User /></el-icon>个人信息
                   </el-dropdown-item>
-                  <el-dropdown-item divided command="logout">
+                  <el-dropdown-item divided @click="handleLogout">
                     <el-icon><SwitchButton /></el-icon>退出登录
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -103,11 +102,57 @@
         </el-main>
       </el-container>
     </el-container>
+
+    <!-- 个人信息编辑弹框 -->
+    <el-dialog
+      v-model="showProfileDialog"
+      title="个人信息"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="profileForm" label-width="80px">
+        <el-form-item label="昵称">
+          <el-input v-model="profileForm.nickname" placeholder="请输入昵称" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="profileForm.phone" placeholder="请输入手机号" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showProfileDialog = false">取消</el-button>
+        <el-button type="primary" @click="showPasswordDialog = true">修改密码</el-button>
+        <el-button type="primary" @click="handleUpdateProfile">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 修改密码弹框 -->
+    <el-dialog
+      v-model="showPasswordDialog"
+      title="修改密码"
+      width="400px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="passwordForm" label-width="80px">
+        <el-form-item label="旧密码">
+          <el-input v-model="passwordForm.oldPassword" type="password" placeholder="请输入旧密码" show-password />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input v-model="passwordForm.newPassword" type="password" placeholder="请输入新密码" show-password />
+        </el-form-item>
+        <el-form-item label="确认密码">
+          <el-input v-model="passwordForm.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showPasswordDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleChangePassword">确认修改</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { 
@@ -115,10 +160,24 @@ import {
   Bell, ArrowDown, SwitchButton
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/store/auth'
+import api from '@/api'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const showProfileDialog = ref(false)
+const showPasswordDialog = ref(false)
+
+const profileForm = ref({
+  nickname: '',
+  phone: ''
+})
+
+const passwordForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
 
 const currentBreadcrumb = computed(() => {
   const routeMap = {
@@ -132,24 +191,124 @@ const currentBreadcrumb = computed(() => {
   return routeMap[route.path] || '小区管理'
 })
 
-const handleCommand = async (command) => {
-  if (command === 'logout') {
-    try {
-      await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-      authStore.logout()
-      router.push('/login')
-      ElMessage.success('已退出登录')
-    } catch {
-      // 取消
+// 加载用户信息
+const loadUserProfile = async () => {
+  try {
+    const res = await api.get('/api/user/profile')
+    console.log('用户信息响应:', res)
+    if (res.code === 200 && res.data) {
+      const userData = res.data
+      // 尝试多个可能的字段名
+      const phone = userData.phone || userData.phoneNumber || userData.mobile || authStore.user?.phone || ''
+      profileForm.value = {
+        nickname: userData.nickname || userData.username || authStore.user?.nickname || '',
+        phone: phone
+      }
+      // 只更新用户信息，不覆盖整个对象（保留communityId等字段）
+      Object.assign(authStore.user, userData)
+      console.log('填充的表单数据:', profileForm.value)
     }
-  } else if (command === 'profile') {
-    ElMessage.info('功能开发中')
+  } catch (error) {
+    console.error('加载用户信息失败:', error)
+    // 如果API失败，从store中获取
+    if (authStore.user) {
+      profileForm.value = {
+        nickname: authStore.user.nickname || authStore.user.username || '',
+        phone: authStore.user.phone || authStore.user.phoneNumber || authStore.user.mobile || ''
+      }
+    }
   }
 }
+
+// 更新个人信息
+const handleUpdateProfile = async () => {
+  try {
+    const res = await api.put('/api/user/profile', profileForm.value)
+    if (res.code === 200) {
+      ElMessage.success('个人信息更新成功')
+      showProfileDialog.value = false
+      await loadUserProfile()
+    } else {
+      ElMessage.error(res.message || '更新失败')
+    }
+  } catch (error) {
+    ElMessage.error('更新失败')
+  }
+}
+
+// 修改密码
+const handleChangePassword = async () => {
+  if (!passwordForm.value.oldPassword || !passwordForm.value.newPassword) {
+    ElMessage.warning('请填写完整信息')
+    return
+  }
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    ElMessage.warning('两次输入的新密码不一致')
+    return
+  }
+  if (passwordForm.value.newPassword.length < 6) {
+    ElMessage.warning('新密码长度不能少于6位')
+    return
+  }
+
+  try {
+    const res = await api.post('/api/user/change-password', {
+      oldPassword: passwordForm.value.oldPassword,
+      newPassword: passwordForm.value.newPassword
+    })
+    if (res.code === 200) {
+      ElMessage.success('密码修改成功，请重新登录')
+      showPasswordDialog.value = false
+      showProfileDialog.value = false
+      passwordForm.value = {
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }
+      setTimeout(() => {
+        authStore.logout()
+        router.push('/login')
+      }, 1500)
+    } else {
+      ElMessage.error(res.message || '修改失败')
+    }
+  } catch (error) {
+    ElMessage.error('修改失败')
+  }
+}
+
+// 打开个人信息弹框
+const handleOpenProfile = async () => {
+  // 先从store获取数据填充表单
+  if (authStore.user) {
+    profileForm.value = {
+      nickname: authStore.user.nickname || authStore.user.username || '',
+      phone: authStore.user.phone || authStore.user.phoneNumber || authStore.user.mobile || ''
+    }
+  }
+  // 然后尝试从后端刷新数据
+  await loadUserProfile()
+  showProfileDialog.value = true
+}
+
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    authStore.logout()
+    router.push('/login')
+    ElMessage.success('已退出登录')
+  } catch {
+    // 取消
+  }
+}
+
+onMounted(() => {
+  loadUserProfile()
+})
 </script>
 
 <style scoped>

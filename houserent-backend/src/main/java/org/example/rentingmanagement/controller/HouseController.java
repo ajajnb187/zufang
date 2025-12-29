@@ -12,6 +12,7 @@ import org.example.rentingmanagement.entity.House;
 import org.example.rentingmanagement.entity.HouseImage;
 import org.example.rentingmanagement.service.HouseService;
 import org.example.rentingmanagement.service.HouseImageService;
+import org.example.rentingmanagement.util.ImageUrlUtil;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,7 @@ public class HouseController {
 
     private final HouseService houseService;
     private final HouseImageService houseImageService;
+    private final ImageUrlUtil imageUrlUtil;
 
     /**
      * 发布房源
@@ -219,6 +221,8 @@ public class HouseController {
         }
 
         List<HouseImage> images = houseImageService.uploadHouseImages(houseId, files);
+        // 转换为Base64
+        images.forEach(img -> img.setImageUrl(imageUrlUtil.toBase64DataUrl(img.getImageUrl())));
         return Result.success("图片上传成功", images);
     }
 
@@ -228,6 +232,8 @@ public class HouseController {
     @GetMapping("/{houseId}/images")
     public Result<List<HouseImage>> getHouseImages(@PathVariable Long houseId) {
         List<HouseImage> images = houseImageService.getImagesByHouseId(houseId);
+        // 转换为Base64
+        images.forEach(img -> img.setImageUrl(imageUrlUtil.toBase64DataUrl(img.getImageUrl())));
         return Result.success(images);
     }
 

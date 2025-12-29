@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
@@ -115,10 +116,10 @@ public class MinioServiceImpl implements MinioService {
                             .build()
             );
 
-            // 返回文件访问URL
-            String fileUrl = minioConfig.getEndpoint() + "/" + minioConfig.getBucketName() + "/" + objectName;
-            log.info("File uploaded successfully: {}", fileUrl);
-            return fileUrl;
+            // 返回相对路径（bucket/objectName），不再返回完整URL
+            String relativePath = minioConfig.getBucketName() + "/" + objectName;
+            log.info("File uploaded successfully, relative path: {}", relativePath);
+            return relativePath;
 
         } catch (Exception e) {
             log.error("File upload failed", e);
@@ -183,7 +184,8 @@ public class MinioServiceImpl implements MinioService {
 
     @Override
     public String getFileUrl(String objectName) {
-        return minioConfig.getEndpoint() + "/" + minioConfig.getBucketName() + "/" + objectName;
+        // 返回相对路径（bucket/objectName）
+        return minioConfig.getBucketName() + "/" + objectName;
     }
 
     @Override
@@ -202,19 +204,71 @@ public class MinioServiceImpl implements MinioService {
     }
 
     /**
-     * 从URL中提取对象名称
+     * 从URL或相对路径中提取对象名称
      */
-    private String extractObjectNameFromUrl(String fileUrl) {
-        if (fileUrl == null || fileUrl.isEmpty()) {
+    private String extractObjectNameFromUrl(String filePathOrUrl) {
+        if (filePathOrUrl == null || filePathOrUrl.isEmpty()) {
             return null;
         }
         
+        // 如果是相对路径格式（bucket/objectName），直接提取objectName
+        String bucketPrefix = minioConfig.getBucketName() + "/";
+        if (filePathOrUrl.startsWith(bucketPrefix)) {
+            return filePathOrUrl.substring(bucketPrefix.length());
+        }
+        
+        // 兼容旧的完整URL格式
         String bucketPath = "/" + minioConfig.getBucketName() + "/";
-        int index = fileUrl.indexOf(bucketPath);
+        int index = filePathOrUrl.indexOf(bucketPath);
         if (index == -1) {
             return null;
         }
         
-        return fileUrl.substring(index + bucketPath.length());
+        String pathPart = filePathOrUrl.substring(index + bucketPath.length());
+        // 移除查询参数
+        int queryIndex = pathPart.indexOf("?");
+        if (queryIndex != -1) {
+            pathPart = pathPart.substring(0, queryIndex);
+        }
+        
+        return pathPart;
+    }
+
+    /**
+     * 获取文件字节数组
+     * 用于Base64编码
+     */
+    @Override
+    public byte[] getFileBytes(String bucketName, String objectName) {
+        try {
+            log.debug("获取文件字节: bucket={}, object={}", bucketName, objectName);
+            
+            // 从MinIO获取文件流
+            InputStream stream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build()
+            );
+            
+            // 读取所有字节
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] data = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = stream.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, bytesRead);
+            }
+            buffer.flush();
+            stream.close();
+            
+            byte[] result = buffer.toByteArray();
+            log.info("成功获取文件字节: bucket={}, object={}, size={}KB", 
+                    bucketName, objectName, result.length / 1024);
+            
+            return result;
+        } catch (Exception e) {
+            log.error("获取文件字节失败: bucket={}, object={}", bucketName, objectName, e);
+            return null;
+        }
     }
 }

@@ -13,6 +13,7 @@ import org.example.rentingmanagement.config.MinioConfig;
 import org.example.rentingmanagement.entity.FileUpload;
 import org.example.rentingmanagement.mapper.FileUploadMapper;
 import org.example.rentingmanagement.service.FileUploadService;
+import org.example.rentingmanagement.util.ImageUrlUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +33,7 @@ public class FileUploadServiceImpl extends ServiceImpl<FileUploadMapper, FileUpl
 
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
+    private final ImageUrlUtil imageUrlUtil;
 
     /**
      * 支持的图片文件类型
@@ -83,8 +85,8 @@ public class FileUploadServiceImpl extends ServiceImpl<FileUploadMapper, FileUpl
                             .build()
             );
 
-            // 生成访问URL
-            String fileUrl = getFileUrl(bucketName, filePath);
+            // 保存相对路径（bucket/objectName）
+            String relativePath = bucketName + "/" + filePath;
 
             // 保存文件记录到数据库
             FileUpload fileUpload = new FileUpload();
@@ -92,7 +94,7 @@ public class FileUploadServiceImpl extends ServiceImpl<FileUploadMapper, FileUpl
             fileUpload.setOriginalName(originalName);
             fileUpload.setFileName(fileName);
             fileUpload.setFilePath(filePath);
-            fileUpload.setFileUrl(fileUrl);
+            fileUpload.setFileUrl(relativePath);
             fileUpload.setFileSize(file.getSize());
             fileUpload.setFileType(file.getContentType());
             fileUpload.setCategory(category);
@@ -159,22 +161,10 @@ public class FileUploadServiceImpl extends ServiceImpl<FileUploadMapper, FileUpl
     
     /**
      * 获取文件访问URL（指定桶）
+     * 返回相对路径
      */
     public String getFileUrl(String bucketName, String fileName) {
-        try {
-            // 生成预签名URL，有效期7天
-            return minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .method(io.minio.http.Method.GET)
-                            .bucket(bucketName)
-                            .object(fileName)
-                            .expiry(7 * 24 * 60 * 60) // 7天
-                            .build()
-            );
-        } catch (Exception e) {
-            log.error("生成文件访问URL失败: {}", e.getMessage(), e);
-            return minioConfig.getEndpoint() + "/" + bucketName + "/" + fileName;
-        }
+        return bucketName + "/" + fileName;
     }
 
     @Override

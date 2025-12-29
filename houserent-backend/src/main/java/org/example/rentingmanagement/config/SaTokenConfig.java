@@ -40,6 +40,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
                     .notMatch("/websocket/**") // WebSocket连接
                     .notMatch("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs/**") // 接口文档
                     .notMatch("/favicon.ico", "/error") // 系统相关
+                    .notMatch("/api/img/**") // 图片代理（公开访问）
                     .check(r -> StpUtil.checkLogin()); // 执行登录校验
 
         }).isAnnotation(true)) // 启用注解鉴权功能

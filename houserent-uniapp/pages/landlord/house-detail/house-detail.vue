@@ -172,6 +172,16 @@ export default {
 							this.houseDetail.images = [this.houseDetail.images]
 						}
 					}
+					// 处理代理URL - 添加完整baseUrl
+					if (this.houseDetail.images && this.houseDetail.images.length > 0) {
+						const baseUrl = api.baseUrl.replace('/api', '')
+						this.houseDetail.images = this.houseDetail.images.map(url => {
+							if (url && url.startsWith('/api/img/')) {
+								return baseUrl + url
+							}
+							return url
+						})
+					}
 					if (!this.houseDetail.images || this.houseDetail.images.length === 0) {
 						this.houseDetail.images = ['/static/logo.png']
 					}

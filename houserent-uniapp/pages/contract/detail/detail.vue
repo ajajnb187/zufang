@@ -178,25 +178,38 @@
 		<view class="bottom-actions" v-if="contract.contractId && !loading">
 			<!-- 待签署状态 - 房东操作 -->
 			<template v-if="isLandlord && !contract.landlordSignature && contract.contractStatus === 'draft'">
-				<button class="btn btn-primary" @click="goToSign">签署合同</button>
+				<view class="action-btn primary" @click="goToSign">
+					<text class="btn-icon">✍</text>
+					<text class="btn-text">签署合同</text>
+				</view>
 			</template>
 			
 			<!-- 待签署状态 - 租客操作 -->
 			<template v-if="isTenant && !contract.tenantSignature && contract.contractStatus === 'draft'">
-				<button class="btn btn-default" @click="rejectContract">拒绝签署</button>
-				<button class="btn btn-primary" @click="goToSign">签署合同</button>
+				<view class="action-btn default" @click="rejectContract">
+					<text class="btn-icon">✕</text>
+					<text class="btn-text">拒绝</text>
+				</view>
+				<view class="action-btn primary" @click="goToSign">
+					<text class="btn-icon">✍</text>
+					<text class="btn-text">签署合同</text>
+				</view>
 			</template>
 			
 			<!-- 合同生效后操作 -->
 			<template v-if="contract.contractStatus === 'effective'">
-				<button class="btn btn-default" @click="contactOther">联系对方</button>
-				<button class="btn btn-default" @click="downloadPDF">下载合同</button>
-				<button class="btn btn-danger" @click="showTerminateModal = true">申请解约</button>
-			</template>
-			
-			<!-- 查看PDF -->
-			<template v-if="contract.pdfUrl">
-				<button class="btn btn-default" @click="viewPDF">查看PDF</button>
+				<view class="action-btn default" @click="contactOther">
+					<text class="btn-icon">📞</text>
+					<text class="btn-text">联系对方</text>
+				</view>
+				<view class="action-btn default" @click="downloadContract">
+					<text class="btn-icon">📄</text>
+					<text class="btn-text">下载合同</text>
+				</view>
+				<view class="action-btn danger" @click="showTerminateModal = true">
+					<text class="btn-icon">🚫</text>
+					<text class="btn-text">申请解约</text>
+				</view>
 			</template>
 		</view>
 		
@@ -555,75 +568,118 @@ export default {
 			}
 		},
 		
-		async downloadPDF() {
+		// 下载合同PDF
+		async downloadContract() {
 			const contractId = this.contractId || this.contract.contractId
 			if (!contractId) {
 				uni.showToast({ title: '合同ID不存在', icon: 'none' })
 				return
 			}
 			
-			uni.showLoading({ title: 'PDF生成中...' })
+			// 检查是否在开发者工具中
+			const systemInfo = uni.getSystemInfoSync()
+			const isDevtools = systemInfo.platform === 'devtools'
+			
+			uni.showLoading({ title: '正在生成合同...' })
+			
 			try {
+				// 先调用生成PDF接口
 				const res = await api.contract.generatePDF(contractId)
-				uni.hideLoading()
-				if (res.code === 200 && res.data) {
-					// 后端返回相对路径，需要拼接完整URL
-					const baseUrl = api.baseUrl.replace('/api', '')
-					this.contract.pdfUrl = baseUrl + res.data
-					console.log('PDF下载地址:', this.contract.pdfUrl)
-					uni.showToast({ title: 'PDF已生成', icon: 'success' })
-					// 自动打开查看
-					setTimeout(() => this.viewPDF(), 500)
-				} else {
-					uni.showToast({ title: res.message || 'PDF生成失败', icon: 'none' })
+				if (res.code !== 200) {
+					uni.hideLoading()
+					uni.showToast({ title: res.message || '合同生成失败', icon: 'none' })
+					return
 				}
+				
+				// 构建下载URL - 使用后端提供的下载接口
+				const baseUrl = api.baseUrl.replace('/api', '')
+				const downloadUrl = `${baseUrl}/api/contracts/${contractId}/download-pdf`
+				console.log('下载URL:', downloadUrl)
+				
+				// 如果是开发者工具，提示用户在真机上测试或复制链接
+				if (isDevtools) {
+					uni.hideLoading()
+					uni.showModal({
+						title: '提示',
+						content: '开发者工具不支持打开PDF文件，请在真机上测试。\n\n合同已生成成功，您可以在浏览器中打开以下链接查看：',
+						confirmText: '复制链接',
+						cancelText: '知道了',
+						success: (modalRes) => {
+							if (modalRes.confirm) {
+								uni.setClipboardData({
+									data: downloadUrl,
+									success: () => {
+										uni.showToast({ title: '链接已复制', icon: 'success' })
+									}
+								})
+							}
+						}
+					})
+					return
+				}
+				
+				uni.showLoading({ title: '正在下载...' })
+				
+				// 下载PDF文件
+				uni.downloadFile({
+					url: downloadUrl,
+					header: {
+						'Authorization': 'Bearer ' + uni.getStorageSync('token')
+					},
+					success: (downloadRes) => {
+						uni.hideLoading()
+						console.log('下载结果:', downloadRes)
+						
+						if (downloadRes.statusCode === 200 && downloadRes.tempFilePath) {
+							// 下载成功，保存到手机
+							uni.saveFile({
+								tempFilePath: downloadRes.tempFilePath,
+								success: (saveRes) => {
+									console.log('保存成功:', saveRes.savedFilePath)
+									// 打开文档查看
+									uni.openDocument({
+										filePath: saveRes.savedFilePath,
+										fileType: 'pdf',
+										showMenu: true,
+										success: () => {
+											console.log('打开合同PDF成功')
+										},
+										fail: (err) => {
+											console.error('打开PDF失败:', err)
+											uni.showToast({ title: '合同已保存，请在文件管理中查看', icon: 'none', duration: 2000 })
+										}
+									})
+								},
+								fail: (err) => {
+									console.error('保存文件失败:', err)
+									// 保存失败时直接打开临时文件
+									uni.openDocument({
+										filePath: downloadRes.tempFilePath,
+										fileType: 'pdf',
+										showMenu: true,
+										fail: () => {
+											uni.showToast({ title: '打开失败', icon: 'none' })
+										}
+									})
+								}
+							})
+						} else if (downloadRes.statusCode === 404) {
+							uni.showToast({ title: '合同文件不存在', icon: 'none' })
+						} else {
+							uni.showToast({ title: '下载失败', icon: 'none' })
+						}
+					},
+					fail: (err) => {
+						uni.hideLoading()
+						console.error('下载合同失败:', err)
+						uni.showToast({ title: '下载失败，请检查网络', icon: 'none' })
+					}
+				})
 			} catch (e) {
 				uni.hideLoading()
-				console.error('生成PDF失败:', e)
-				uni.showToast({ title: 'PDF生成失败', icon: 'none' })
+				console.error('下载合同失败:', e)
+				uni.showToast({ title: '操作失败', icon: 'none' })
 			}
-		},
-		
-		viewPDF() {
-			const pdfUrl = this.contract.pdfUrl
-			if (!pdfUrl) {
-				uni.showToast({ title: '请先生成PDF', icon: 'none' })
-				return
-			}
-			
-			console.log('正在下载PDF:', pdfUrl)
-			uni.showLoading({ title: '下载中...' })
-			uni.downloadFile({
-				url: pdfUrl,
-				header: {
-					'satoken': uni.getStorageSync('token')
-				},
-				success: (res) => {
-					uni.hideLoading()
-					console.log('下载结果:', res)
-					if (res.statusCode === 200) {
-						uni.openDocument({
-							filePath: res.tempFilePath,
-							fileType: 'pdf',
-							showMenu: true,
-							success: () => {
-								console.log('打开PDF成功')
-							},
-							fail: (err) => {
-								console.error('打开PDF失败:', err)
-								uni.showToast({ title: '打开失败', icon: 'none' })
-							}
-						})
-					} else {
-						uni.showToast({ title: '下载失败: ' + res.statusCode, icon: 'none' })
-					}
-				},
-				fail: (err) => {
-					uni.hideLoading()
-					console.error('下载PDF失败:', err)
-					uni.showToast({ title: '下载失败', icon: 'none' })
-				}
-			})
 		},
 		
 		async submitTerminate() {
@@ -1058,39 +1114,64 @@ export default {
 	left: 0;
 	right: 0;
 	background: #fff;
-	padding: 20rpx 30rpx;
-	padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+	padding: 24rpx 20rpx;
+	padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
 	display: flex;
-	gap: 20rpx;
-	box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+	justify-content: center;
+	gap: 16rpx;
+	box-shadow: 0 -4rpx 20rpx rgba(0,0,0,0.08);
 	
-	.btn {
-		flex: 1;
-		height: 88rpx;
-		line-height: 88rpx;
-		border-radius: 44rpx;
-		font-size: 30rpx;
-		font-weight: 600;
-		text-align: center;
-		border: none;
+	.action-btn {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-width: 140rpx;
+		padding: 16rpx 24rpx;
+		border-radius: 16rpx;
+		transition: all 0.2s;
 		
-		&::after {
-			border: none;
+		&:active {
+			opacity: 0.8;
+			transform: scale(0.95);
 		}
 		
-		&.btn-primary {
+		.btn-icon {
+			font-size: 36rpx;
+			margin-bottom: 8rpx;
+		}
+		
+		.btn-text {
+			font-size: 24rpx;
+			font-weight: 500;
+			white-space: nowrap;
+		}
+		
+		&.primary {
 			background: linear-gradient(135deg, #667eea, #764ba2);
 			color: #fff;
+			flex: 1;
+			max-width: 280rpx;
+			
+			.btn-icon {
+				font-size: 40rpx;
+			}
+			
+			.btn-text {
+				font-size: 28rpx;
+			}
 		}
 		
-		&.btn-default {
-			background: #f5f5f5;
+		&.default {
+			background: #f5f7fa;
 			color: #333;
+			border: 1rpx solid #e8e8e8;
 		}
 		
-		&.btn-danger {
-			background: #f44336;
-			color: #fff;
+		&.danger {
+			background: #fff5f5;
+			color: #f44336;
+			border: 1rpx solid #ffcdd2;
 		}
 	}
 }

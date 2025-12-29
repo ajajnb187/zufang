@@ -292,12 +292,51 @@ public class ContractServiceImpl extends ServiceImpl<RentalContractMapper, Renta
             document.add(content);
 
             // 添加签名区域
-            if (contract.getLandlordSignature() != null) {
-                addSignatureToDocument(document, "甲方签名", contract.getLandlordSignature(), bfChinese);
+            document.add(new Paragraph(" ", contentFont)); // 空行
+            
+            // 甲方签名
+            if (contract.getLandlordSignature() != null && !contract.getLandlordSignature().isEmpty()) {
+                addSignatureToDocument(document, "甲方（出租方）签名", contract.getLandlordSignature(), 
+                    contract.getLandlordSignTime(), bfChinese);
+            } else {
+                Paragraph noSign = new Paragraph("甲方（出租方）签名：_________________ 日期：_________", contentFont);
+                document.add(noSign);
             }
+            
+            document.add(new Paragraph(" ", contentFont)); // 空行
 
-            if (contract.getTenantSignature() != null) {
-                addSignatureToDocument(document, "乙方签名", contract.getTenantSignature(), bfChinese);
+            // 乙方签名
+            if (contract.getTenantSignature() != null && !contract.getTenantSignature().isEmpty()) {
+                addSignatureToDocument(document, "乙方（承租方）签名", contract.getTenantSignature(), 
+                    contract.getTenantSignTime(), bfChinese);
+            } else {
+                Paragraph noSign = new Paragraph("乙方（承租方）签名：_________________ 日期：_________", contentFont);
+                document.add(noSign);
+            }
+            
+            document.add(new Paragraph(" ", contentFont)); // 空行
+            
+            // 小区管理员审核
+            if (contract.getAuditorId() != null && contract.getAuditTime() != null) {
+                // 获取审核员信息
+                User auditor = userMapper.selectById(contract.getAuditorId());
+                String auditorName = auditor != null ? (auditor.getNickname() != null ? auditor.getNickname() : "管理员") : "管理员";
+                String auditDateStr = contract.getAuditTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                String auditStatus = "approved".equals(contract.getAuditStatus()) ? "审核通过" : "审核中";
+                
+                Paragraph auditLabel = new Paragraph("小区管理员审核：", contentFont);
+                document.add(auditLabel);
+                Paragraph auditInfo = new Paragraph("审核人：" + auditorName + "    状态：" + auditStatus, contentFont);
+                document.add(auditInfo);
+                Paragraph auditDate = new Paragraph("审核日期：" + auditDateStr, contentFont);
+                document.add(auditDate);
+                if (contract.getAuditOpinion() != null && !contract.getAuditOpinion().isEmpty()) {
+                    Paragraph auditOpinion = new Paragraph("审核意见：" + contract.getAuditOpinion(), contentFont);
+                    document.add(auditOpinion);
+                }
+            } else {
+                Paragraph noAudit = new Paragraph("小区管理员审核：_________________ 日期：_________", contentFont);
+                document.add(noAudit);
             }
 
             document.close();
@@ -715,21 +754,52 @@ public class ContractServiceImpl extends ServiceImpl<RentalContractMapper, Renta
     }
 
     /**
-     * 在文档中添加签名
+     * 在文档中添加签名图片和日期
      */
-    private void addSignatureToDocument(Document document, String label, String signatureBase64, BaseFont font) throws DocumentException, IOException {
+    private void addSignatureToDocument(Document document, String label, String signatureBase64, 
+            LocalDateTime signTime, BaseFont font) throws DocumentException, IOException {
         Font labelFont = new Font(font, 12, Font.NORMAL);
         
+        // 添加签名标签
         Paragraph signatureLabel = new Paragraph(label + "：", labelFont);
         document.add(signatureLabel);
 
-        // 如果有签名数据，可以在这里添加签名图片
-        // 这里简化处理，只添加文字说明
+        // 解析Base64签名图片并添加到PDF
         if (signatureBase64 != null && !signatureBase64.isEmpty()) {
-            Paragraph signatureText = new Paragraph("【电子签名】", labelFont);
-            document.add(signatureText);
+            try {
+                // 移除Base64前缀 (data:image/png;base64,)
+                String base64Data = signatureBase64;
+                if (base64Data.contains(",")) {
+                    base64Data = base64Data.substring(base64Data.indexOf(",") + 1);
+                }
+                
+                // 解码Base64为字节数组
+                byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Data);
+                
+                // 创建iText图片
+                Image signatureImage = Image.getInstance(imageBytes);
+                
+                // 设置图片大小（宽度150，高度自动缩放）
+                signatureImage.scaleToFit(150, 60);
+                
+                // 添加图片到文档
+                document.add(signatureImage);
+                
+            } catch (Exception e) {
+                log.warn("签名图片解析失败，使用文字替代: {}", e.getMessage());
+                Paragraph signatureText = new Paragraph("【电子签名已确认】", labelFont);
+                document.add(signatureText);
+            }
         }
-
+        
+        // 添加签署日期
+        String dateStr = "_________";
+        if (signTime != null) {
+            dateStr = signTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        }
+        Paragraph dateParagraph = new Paragraph("签署日期：" + dateStr, labelFont);
+        document.add(dateParagraph);
+        
         document.add(new Paragraph(" ", labelFont)); // 空行
     }
 

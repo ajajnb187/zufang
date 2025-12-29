@@ -122,7 +122,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, OfficeBuilding } from '@element-plus/icons-vue'
 import { getCommunityList, addCommunity, updateCommunity, deleteCommunity } from '@/api/platform'
 
 const loading = ref(false)
@@ -306,23 +306,145 @@ onMounted(() => {
 
 <style scoped>
 .community-list-container {
-  padding: 20px;
+  padding: 24px;
+  background: #f5f7fa;
+  min-height: 100%;
 }
 
-.card-header {
+/* 页面标题 */
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 16px;
+  margin-bottom: 24px;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
   font-weight: 600;
+  color: #303133;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #909399;
+}
+
+.add-btn {
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* 搜索卡片 */
+.search-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: none;
+}
+
+.search-card :deep(.el-card__body) {
+  padding: 20px;
 }
 
 .search-form {
-  margin-bottom: 20px;
+  margin: 0;
 }
 
+.search-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 16px;
+}
+
+.search-form :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+/* 表格卡片 */
+.table-card {
+  border-radius: 12px;
+  border: none;
+}
+
+.table-card :deep(.el-card__body) {
+  padding: 0;
+}
+
+/* 现代化表格 */
+.modern-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modern-table :deep(.el-table__header-wrapper) {
+  border-radius: 12px 12px 0 0;
+}
+
+.modern-table :deep(.el-table__row) {
+  transition: all 0.3s;
+}
+
+.modern-table :deep(.el-table__row:hover) {
+  background-color: #f8f9fa !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.modern-table :deep(.el-table td) {
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.modern-table :deep(.el-table__empty-block) {
+  padding: 60px 0;
+}
+
+/* 小区名称样式 */
+.community-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.building-icon {
+  color: #409eff;
+  font-size: 18px;
+}
+
+/* 操作按钮 */
+.modern-table :deep(.el-button + .el-button) {
+  margin-left: 8px;
+}
+
+/* 分页 */
 .pagination-container {
-  margin-top: 20px;
-  text-align: right;
+  padding: 20px;
+  display: flex;
+  justify-content: flex-end;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+}
+
+.pagination-container :deep(.el-pagination) {
+  gap: 8px;
+}
+
+.pagination-container :deep(.el-pager li) {
+  border-radius: 6px;
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.pagination-container :deep(.el-pager li.is-active) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 </style>

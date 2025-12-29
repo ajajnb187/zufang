@@ -1,25 +1,27 @@
 <template>
   <div class="contract-review-container">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>本小区合同审核与管理</span>
-        </div>
-      </template>
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="header-content">
+        <h2 class="page-title">合同审核</h2>
+        <p class="page-subtitle">审核和管理本小区的租赁合同</p>
+      </div>
+    </div>
 
-      <!-- 搜索和筛选 -->
+    <!-- 搜索卡片 -->
+    <el-card class="search-card" shadow="never">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="合同编号">
-          <el-input v-model="searchForm.contractNo" placeholder="请输入合同编号" clearable />
+          <el-input v-model="searchForm.contractNo" placeholder="请输入合同编号" clearable prefix-icon="Search" style="width: 180px" />
         </el-form-item>
         <el-form-item label="房东姓名">
-          <el-input v-model="searchForm.landlord" placeholder="请输入房东姓名" clearable />
+          <el-input v-model="searchForm.landlord" placeholder="请输入房东姓名" clearable style="width: 150px" />
         </el-form-item>
         <el-form-item label="租客姓名">
-          <el-input v-model="searchForm.tenant" placeholder="请输入租客姓名" clearable />
+          <el-input v-model="searchForm.tenant" placeholder="请输入租客姓名" clearable style="width: 150px" />
         </el-form-item>
         <el-form-item label="审核状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+          <el-select v-model="searchForm.status" placeholder="全部状态" clearable style="width: 120px">
             <el-option label="草稿" value="draft" />
             <el-option label="待审核" value="pending" />
             <el-option label="已通过" value="approved" />
@@ -27,100 +29,93 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch" icon="Search">查询</el-button>
+          <el-button @click="handleReset" icon="Refresh">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
-      <!-- 数据表格 -->
-      <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="contractNo" label="合同编号" width="160" />
-        <el-table-column prop="houseTitle" label="房源" width="180" show-overflow-tooltip />
-        <el-table-column prop="landlordName" label="房东" width="100" />
-        <el-table-column prop="tenantName" label="租客" width="100" />
-        <el-table-column label="月租金" width="100">
+    <!-- 数据表格卡片 -->
+    <el-card class="table-card" shadow="never">
+      <el-table 
+        :data="tableData" 
+        v-loading="loading" 
+        stripe 
+        class="modern-table"
+        :header-cell-style="{ background: '#f8f9fa', color: '#606266', fontWeight: '600' }"
+      >
+        <el-table-column prop="contractNo" label="合同编号" width="150" align="center" />
+        <el-table-column prop="houseTitle" label="房源" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="landlordName" label="房东" width="90" />
+        <el-table-column prop="tenantName" label="租客" width="90" />
+        <el-table-column label="月租金" width="100" align="center">
           <template #default="{ row }">
-            <span class="rent-price">¥{{ row.rentPrice }}</span>
+            <div class="rent-price">¥{{ row.rentPrice }}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="startDate" label="起租日期" width="120" />
-        <el-table-column prop="endDate" label="截止日期" width="120" />
-        <el-table-column label="审核状态" width="100">
+        <el-table-column prop="startDate" label="起租日期" width="110" align="center" />
+        <el-table-column prop="endDate" label="截止日期" width="110" align="center" />
+        <el-table-column label="审核状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.auditStatus === 'draft'" type="info">草稿</el-tag>
-            <el-tag v-else-if="row.auditStatus === 'pending'" type="warning">待审核</el-tag>
-            <el-tag v-else-if="row.auditStatus === 'approved'" type="success">已通过</el-tag>
-            <el-tag v-else-if="row.auditStatus === 'rejected'" type="danger">已驳回</el-tag>
-            <el-tag v-else type="info">{{ row.auditStatus }}</el-tag>
+            <el-tag v-if="row.auditStatus === 'draft'" type="info" effect="light" round size="small">草稿</el-tag>
+            <el-tag v-else-if="row.auditStatus === 'pending'" type="warning" effect="light" round size="small">待审核</el-tag>
+            <el-tag v-else-if="row.auditStatus === 'approved'" type="success" effect="light" round size="small">已通过</el-tag>
+            <el-tag v-else-if="row.auditStatus === 'rejected'" type="danger" effect="light" round size="small">已驳回</el-tag>
+            <el-tag v-else type="info" effect="light" round size="small">{{ row.auditStatus }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="合同状态" width="100">
+        <el-table-column label="合同状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.contractStatus === 'draft'" type="info">草稿</el-tag>
-            <el-tag v-else-if="row.contractStatus === 'signed'" type="primary">已签署</el-tag>
-            <el-tag v-else-if="row.contractStatus === 'effective'" type="success">生效中</el-tag>
-            <el-tag v-else-if="row.contractStatus === 'terminated'" type="danger">已终止</el-tag>
-            <el-tag v-else-if="row.contractStatus === 'expired'" type="info">已过期</el-tag>
-            <el-tag v-else type="info">{{ row.contractStatus }}</el-tag>
+            <el-tag v-if="row.contractStatus === 'draft'" type="info" effect="light" round size="small">草稿</el-tag>
+            <el-tag v-else-if="row.contractStatus === 'signed'" type="primary" effect="light" round size="small">已签署</el-tag>
+            <el-tag v-else-if="row.contractStatus === 'effective'" type="success" effect="light" round size="small">生效中</el-tag>
+            <el-tag v-else-if="row.contractStatus === 'terminated'" type="danger" effect="light" round size="small">已终止</el-tag>
+            <el-tag v-else-if="row.contractStatus === 'expired'" type="info" effect="light" round size="small">已过期</el-tag>
+            <el-tag v-else type="info" effect="light" round size="small">{{ row.contractStatus }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="解约状态" width="100">
+        <el-table-column label="解约" width="80" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.terminationStatus === 'pending'" type="warning">待审核</el-tag>
-            <el-tag v-else-if="row.terminationStatus === 'approved'" type="success">已通过</el-tag>
-            <el-tag v-else-if="row.terminationStatus === 'rejected'" type="danger">已驳回</el-tag>
-            <el-tag v-else type="info">无</el-tag>
+            <el-tag v-if="row.terminationStatus === 'pending'" type="warning" effect="light" round size="small">待审</el-tag>
+            <el-tag v-else-if="row.terminationStatus === 'approved'" type="success" effect="light" round size="small">已通过</el-tag>
+            <el-tag v-else-if="row.terminationStatus === 'rejected'" type="danger" effect="light" round size="small">已驳回</el-tag>
+            <el-tag v-else type="info" effect="light" round size="small">无</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="240" fixed="right" align="center">
           <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleView(row)">
-              查看
-            </el-button>
+            <el-button type="primary" link @click="handleView(row)" icon="View">查看</el-button>
             <el-button
               v-if="row.auditStatus === 'pending'"
               type="success"
-              size="small"
+              link
               @click="handleApprove(row)"
+              icon="Check"
             >
               通过
             </el-button>
             <el-button
               v-if="row.auditStatus === 'pending'"
               type="danger"
-              size="small"
+              link
               @click="handleReject(row)"
+              icon="Close"
             >
               驳回
-            </el-button>
-            <el-button
-              v-if="row.terminationStatus === 'pending'"
-              type="success"
-              size="small"
-              @click="handleApproveTermination(row)"
-            >
-              同意解约
-            </el-button>
-            <el-button
-              v-if="row.terminationStatus === 'pending'"
-              type="danger"
-              size="small"
-              @click="handleRejectTermination(row)"
-            >
-              拒绝解约
             </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <!-- 分页 -->
-      <div class="pagination">
+      <div class="pagination-container">
         <el-pagination
           v-model:current-page="pagination.page"
           v-model:page-size="pagination.pageSize"
           :total="pagination.total"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
+          background
           @size-change="handleSizeChange"
           @current-change="handlePageChange"
         />
@@ -471,27 +466,96 @@ onMounted(() => {
 
 <style scoped>
 .contract-review-container {
+  padding: 24px;
+  background: #f5f7fa;
+  min-height: 100%;
+}
+
+/* 页面标题 */
+.page-header {
+  margin-bottom: 24px;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #909399;
+}
+
+/* 搜索卡片 */
+.search-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: none;
+}
+
+.search-card :deep(.el-card__body) {
   padding: 20px;
 }
 
-.card-header {
-  font-size: 16px;
-  font-weight: 600;
+.search-form {
+  margin: 0;
 }
 
-.search-form {
-  margin-bottom: 20px;
+.search-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 16px;
+}
+
+/* 表格卡片 */
+.table-card {
+  border-radius: 12px;
+  border: none;
+}
+
+.table-card :deep(.el-card__body) {
+  padding: 0;
+}
+
+/* 现代化表格 */
+.modern-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modern-table :deep(.el-table__row) {
+  transition: all 0.3s;
+}
+
+.modern-table :deep(.el-table__row:hover) {
+  background-color: #f8f9fa !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.modern-table :deep(.el-table td) {
+  border-bottom: 1px solid #f0f2f5;
 }
 
 .rent-price {
   color: #f56c6c;
   font-weight: 600;
+  font-size: 14px;
 }
 
-.pagination {
-  margin-top: 20px;
+/* 分页 */
+.pagination-container {
+  padding: 20px;
   display: flex;
   justify-content: flex-end;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
 }
 
 .detail-content {
